@@ -4,20 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#16a34a">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest?v=7">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=4">
+<link rel="shortcut icon" href="favicon-32.png?v=4">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=4">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="GruppenDeutschland">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="GruppenDeutschland">
 <meta property="og:title" content="GruppenDeutschland 🇩🇪 | WhatsApp Gruppen Verzeichnis">
 <meta property="og:description" content="Entdecke beliebte WhatsApp- und Telegram-Gruppen in Deutschland.">
-<meta property="og:image" content="https://gruppen-deutchland.github.io/Gruppen-Deutchland/share-preview.png">
+<meta property="og:image" content="https://gruppen-deutchland.github.io/Gruppen-Deutchland/share-preview.png?v=6">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:url" content="https://gruppen-deutchland.github.io/Gruppen-Deutchland/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://gruppen-deutchland.github.io/Gruppen-Deutchland/share-preview.png">
+<meta name="twitter:image" content="https://gruppen-deutchland.github.io/Gruppen-Deutchland/share-preview.png?v=6">
 
 <title>GruppenDeutschland 🇩🇪 | WhatsApp Gruppen Verzeichnis</title>
 <meta name="description" content="Entdecke beliebte WhatsApp-Gruppen in Deutschland. Suche nach Kategorien, stimme für Gruppen ab und teile sie mit Freunden.">
@@ -302,72 +305,7 @@ font-weight:800;
 <button id="shareX" class="social-share x"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#000"/><path fill="#fff" d="M9.2 9h4.4l3.4 4.6L21.1 9h1.7l-5 5.8L23.3 23h-4.4l-3.7-5-4.3 5H9.2l5.2-6.2L9.2 9zm3.6 1.4h-1.1l7.9 11.2h1.1L12.8 10.4z"/></svg><span>X</span></button>
 <button id="copyShare">🔗 Link kopieren</button><button id="nativeShare">📱 Mehr</button></div></div></div>
 <div class="modal" id="voteModal"><div class="modal-box"><button class="close" data-close="voteModal">×</button><h2>⭐ Gruppe bewerten</h2><p class="modal-sub" id="voteTitle"></p><div class="vote-stars" id="voteStars"><button class="star-choice" data-rating="1" type="button">★</button><button class="star-choice" data-rating="2" type="button">★</button><button class="star-choice" data-rating="3" type="button">★</button><button class="star-choice" data-rating="4" type="button">★</button><button class="star-choice" data-rating="5" type="button">★</button></div><button class="submit" id="sendVote" type="button">Bewertung speichern</button><p class="small" style="margin-top:10px">Pro Browser wird je Gruppe nur eine Bewertung zugelassen. Für strengere Kontrolle empfiehlt sich Supabase Auth.</p></div></div>
-<div class="share-chat-box" id="shareChatBox" aria-live="polite"><div class="share-chat-head"><strong>💬 Benachrichtigungen</strong><button class="share-chat-close" id="shareChatClose" type="button" aria-label="Schließen">×</button></div><div class="share-chat-body" id="shareChatBody"><div class="share-chat-msg">👋 Hier erscheinen Benachrichtigungen, sobald eine von dir eingereichte Gruppe freigeschaltet wurde.</div><div class="share-chat-tip">Freigaben werden diesem Browser zugeordnet.</div></div></div><button class="share-chat-toggle" id="shareChatToggle" type="button" aria-label="Benachrichtigungen">💬<span class="chat-badge" id="chatBadge">0</span></button><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-let deferredInstallPrompt=null;
-const appOverlay=$("#appInstallOverlay");
-const appInstallNow=$("#appInstallNow");
-const appInstallFooter=$("#installAppFooter");
-
-function openAppInstall(){
-  appOverlay?.classList.add("show");
-  appOverlay?.setAttribute("aria-hidden","false");
-}
-function closeAppInstall(){
-  appOverlay?.classList.remove("show");
-  appOverlay?.setAttribute("aria-hidden","true");
-}
-
-window.addEventListener("beforeinstallprompt",e=>{
-  e.preventDefault();
-  deferredInstallPrompt=e;
-});
-
-appInstallFooter?.addEventListener("click",openAppInstall);
-$("#appInstallClose")?.addEventListener("click",closeAppInstall);
-$("#appInstallLater")?.addEventListener("click",closeAppInstall);
-appOverlay?.addEventListener("click",e=>{if(e.target===appOverlay)closeAppInstall()});
-
-appInstallNow?.addEventListener("click",async()=>{
-  if(deferredInstallPrompt){
-    deferredInstallPrompt.prompt();
-    try{await deferredInstallPrompt.userChoice}catch{}
-    deferredInstallPrompt=null;
-    closeAppInstall();
-    return;
-  }
-
-  const ua=navigator.userAgent.toLowerCase();
-  const isIOS=/iphone|ipad|ipod/.test(ua);
-  if(isIOS){
-    appInstallNow.textContent="Safari: Teilen → Zum Home-Bildschirm";
-  }else{
-    appInstallNow.textContent="Browser-Menü → App installieren";
-  }
-});
-
-window.addEventListener("appinstalled",()=>{
-  closeAppInstall();
-  if(appInstallFooter){
-    appInstallFooter.textContent="✅ Installiert";
-    appInstallFooter.disabled=true;
-  }
-});
-
-
-if(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches){
-  if(appInstallFooter){
-    appInstallFooter.textContent="✅ App installiert";
-    appInstallFooter.disabled=true;
-  }
-}
-
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("SW:",err));
-  });
-}
-
-</script>
+<div class="share-chat-box" id="shareChatBox" aria-live="polite"><div class="share-chat-head"><strong>💬 Benachrichtigungen</strong><button class="share-chat-close" id="shareChatClose" type="button" aria-label="Schließen">×</button></div><div class="share-chat-body" id="shareChatBody"><div class="share-chat-msg">👋 Hier erscheinen Benachrichtigungen, sobald eine von dir eingereichte Gruppe freigeschaltet wurde.</div><div class="share-chat-tip">Freigaben werden diesem Browser zugeordnet.</div></div></div><button class="share-chat-toggle" id="shareChatToggle" type="button" aria-label="Benachrichtigungen">💬<span class="chat-badge" id="chatBadge">0</span></button><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://cymdnshkisftyulbfncf.supabase.co";const SUPABASE_ANON_KEY="sb_publishable_Q4lVE-CTOYafQL3D2J44zw_sAOBJ7H9";const configured=!SUPABASE_URL.includes("YOUR-PROJECT")&&!SUPABASE_ANON_KEY.includes("YOUR_PUBLIC_ANON_KEY");const db=configured?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
 const ADMIN_EMAIL="carlitostahe@gmail.com";
@@ -551,10 +489,6 @@ openSharedGroupFromUrl();
 loadGroups();
 initApprovalChat();
 
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(console.warn));
-}
-
 </script>
 
 <div class="app-install-overlay" id="appInstallOverlay" aria-hidden="true">
@@ -567,6 +501,103 @@ if("serviceWorker" in navigator){
     <button class="app-install-secondary" id="appInstallLater" type="button">Später</button>
   </div>
 </div>
+
+
+<script>
+(() => {
+  let deferredInstallPrompt = null;
+
+  const footerBtn = document.getElementById("installAppFooter");
+  const overlay = document.getElementById("appInstallOverlay");
+  const installNow = document.getElementById("appInstallNow");
+  const closeBtn = document.getElementById("appInstallClose");
+  const laterBtn = document.getElementById("appInstallLater");
+
+  const openOverlay = () => {
+    if (!overlay) return;
+    overlay.classList.add("show");
+    overlay.setAttribute("aria-hidden", "false");
+  };
+
+  const closeOverlay = () => {
+    if (!overlay) return;
+    overlay.classList.remove("show");
+    overlay.setAttribute("aria-hidden", "true");
+  };
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    if (footerBtn) {
+      footerBtn.disabled = false;
+      footerBtn.textContent = "📲 App installieren";
+    }
+    if (installNow) installNow.textContent = "App installieren";
+  });
+
+  footerBtn?.addEventListener("click", () => {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      footerBtn.textContent = "✅ App installiert";
+      footerBtn.disabled = true;
+      return;
+    }
+    openOverlay();
+  });
+
+  closeBtn?.addEventListener("click", closeOverlay);
+  laterBtn?.addEventListener("click", closeOverlay);
+  overlay?.addEventListener("click", (e) => {
+    if (e.target === overlay) closeOverlay();
+  });
+
+  installNow?.addEventListener("click", async () => {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      if (choice?.outcome === "accepted") {
+        closeOverlay();
+      }
+      deferredInstallPrompt = null;
+      return;
+    }
+
+    const ua = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(ua);
+    const isAndroid = /android/.test(ua);
+
+    if (isIOS) {
+      installNow.textContent = "Safari: Teilen → Zum Home-Bildschirm";
+    } else if (isAndroid) {
+      installNow.textContent = "Chrome-Menü ⋮ → App installieren";
+    } else {
+      installNow.textContent = "Browser-Menü → App installieren";
+    }
+  });
+
+  window.addEventListener("appinstalled", () => {
+    closeOverlay();
+    if (footerBtn) {
+      footerBtn.textContent = "✅ App installiert";
+      footerBtn.disabled = true;
+    }
+  });
+
+  if (window.matchMedia("(display-mode: standalone)").matches && footerBtn) {
+    footerBtn.textContent = "✅ App installiert";
+    footerBtn.disabled = true;
+  }
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        await navigator.serviceWorker.register("./sw.js?v=7", { scope: "./" });
+      } catch (err) {
+        console.warn("Service Worker:", err);
+      }
+    });
+  }
+})();
+</script>
 
 </body>
 </html>
