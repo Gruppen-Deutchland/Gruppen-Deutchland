@@ -367,7 +367,7 @@ function rememberSubmittedGroup(group){const items=getSubmittedGroups();const ke
 function cleanPageUrl(){const u=new URL(window.location.href);u.search="";u.hash="";return u.toString()}
 const GROUPTREFF_URL="https://grouptreff.de/";
 function shortGroupId(id){return `GT-${String(id||"").replace(/[^a-zA-Z0-9]/g,"").slice(0,8).toUpperCase()}`}
-function groupPageUrl(id){return `${GROUPTREFF_URL}?g=${encodeURIComponent(shortGroupId(id))}&join=1`}
+function groupPageUrl(id){return `${GROUPTREFF_URL}g/${encodeURIComponent(shortGroupId(id))}`}
 function openGroupDetail(g){
   if(!g)return;
   state.detail=g;
