@@ -436,6 +436,12 @@ font-weight:800;
 /* Fondos decorativos para modo día y modo noche */
 body{background-color:#f7faf8;background-image:url('grouptreff-background-day.jpg');background-repeat:no-repeat;background-size:cover;background-position:center top;background-attachment:fixed}
 body.dark{background-color:#0f172a;background-image:url('grouptreff-background-night.jpg')}
+/* Las tarjetas conservan el mismo diseño en modo noche. */
+body.dark .group-card{background:linear-gradient(145deg,#ecfff1,#d8f8e3)!important;border-color:#b9ebc9!important}
+body.dark .group-card .group-title{color:#101820!important}
+body.dark .group-card .group-tags .small{color:#18232b!important}
+body.dark .group-card .top-vote{color:#13212b!important}
+@media(max-width:620px){body.dark .group-card{background:#fff!important}}
 </style>
 </head>
 <body>
@@ -1074,6 +1080,31 @@ loadGroups();
   panel.querySelector('[data-drawer="auth"]')?.addEventListener("click",()=>{close();document.getElementById("openAuth")?.click()});
   panel.querySelector(".profile-drawer-install")?.addEventListener("click",()=>{close();document.getElementById("installAppFooter")?.click()});
   panel.querySelectorAll(".profile-drawer-language").forEach(button=>button.addEventListener("click",()=>{panel.querySelectorAll(".profile-drawer-language").forEach(item=>item.classList.remove("active"));button.classList.add("active")}));
+})();
+</script>
+<style>
+/* Menú unificado de tres líneas para móvil y escritorio */
+.nav{position:relative}.mobile-menu-toggle{display:grid!important;place-items:center;position:relative!important;right:auto!important;top:auto!important;width:42px;height:42px;margin-left:auto;border:0;border-radius:10px;background:#128c7e;color:#fff;font-size:25px;line-height:1;z-index:130}.mobile-add-toggle{display:none!important}.nav-right{display:none!important;position:absolute!important;top:calc(100% + 1px)!important;right:0!important;z-index:125;width:238px;margin:0!important;padding:9px!important;background:#fff!important;border:1px solid #dce7df!important;border-radius:0 0 13px 13px!important;box-shadow:0 14px 26px rgba(13,62,31,.24)!important}.nav.mobile-menu-open .nav-right{display:flex!important;flex-direction:column;align-items:stretch;gap:6px}.nav.mobile-menu-open .nav-right .nav-btn{display:flex!important;position:static!important;width:100%;justify-content:flex-start;padding:11px 12px!important;border:1px solid #d8e7dc!important;border-radius:9px!important;background:#fff!important;color:#174a2d!important;font-size:13px!important}.nav.mobile-menu-open .nav-right .add-btn{background:#16a34a!important;color:#fff!important;border-color:#16a34a!important}.nav.mobile-menu-open .nav-right #logoutBtn{color:#c62232!important;border-color:#f2c2c7!important}.menu-account-name{display:none;align-items:center;gap:8px;padding:11px 12px;border-bottom:1px solid #d8e7dc;color:#126b45;font-weight:800;font-size:14px}.menu-account-name.show{display:flex}.menu-language-options{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:8px 0 2px;border-top:1px solid #d8e7dc}.menu-language-options button{border:1px solid #d8e7dc;background:#f4fbf6;color:#174a2d;border-radius:8px;padding:8px 3px;font-size:11px;font-weight:800}.menu-language-options button.active{background:#128c7e;color:#fff;border-color:#128c7e}.dark .nav-right,.dark .nav.mobile-menu-open .nav-right .nav-btn{background:#173126!important;color:#f8fafc!important;border-color:#315542!important}.dark .menu-account-name,.dark .menu-language-options{border-color:#315542}.dark .menu-language-options button{background:#214334;color:#f8fafc;border-color:#315542}.dark .menu-language-options button.active{background:#25d366;color:#10301e;border-color:#25d366}@media(max-width:620px){.mobile-menu-toggle{position:absolute!important;right:10px!important;top:6px!important}.nav-right{right:8px!important;top:54px!important;width:220px}.nav.mobile-menu-open .nav-right .nav-btn{justify-content:center!important}}
+</style>
+<script>
+(() => {
+  const nav=document.querySelector('.nav'),menu=document.getElementById('mobileMenuToggle'),auth=document.getElementById('openAuth'),groups=document.getElementById('openMyGroups'),logout=document.getElementById('logoutBtn'),theme=document.getElementById('mobileTheme'),oldLanguage=document.getElementById('mobileLanguage');
+  if(!nav||!menu||!groups||!logout||!theme)return;
+  const profile=document.createElement('button');
+  profile.id='openProfileFromMenu';profile.type='button';profile.className='nav-btn';profile.innerHTML='👤 <span>Mi perfil</span>';
+  groups.insertAdjacentElement('beforebegin',profile);
+  const account=document.createElement('div');account.className='menu-account-name';account.id='menuAccountName';account.textContent='👤 Mi perfil';
+  nav.querySelector('.nav-right')?.prepend(account);
+  const languages=document.createElement('div');languages.className='menu-language-options';languages.setAttribute('aria-label','Idiomas');languages.innerHTML='<button type="button" data-menu-language="de">🇩🇪 DE</button><button type="button" data-menu-language="us">🇺🇸 EN</button><button type="button" data-menu-language="es">🇪🇸 ES</button>';
+  oldLanguage?.replaceWith(languages);
+  groups.textContent='📂 Mis grupos';logout.textContent='⇥ Cerrar sesión';
+  const openProfile=()=>{location.href=(typeof GROUPTREFF_URL!=='undefined'?GROUPTREFF_URL:'https://grouptreff.de/')+'?profile=1'};
+  profile.addEventListener('click',openProfile);
+  document.addEventListener('click',event=>{if(event.target.closest('#openMyGroups')){event.preventDefault();event.stopPropagation();openProfile()}},true);
+  const sync=()=>{const logged=typeof currentUser!=='undefined'&&!!currentUser;profile.style.display=logged?'flex':'none';groups.style.display=logged?'flex':'none';logout.style.display=logged?'flex':'none';if(auth)auth.style.display=logged?'none':'flex';account.classList.toggle('show',logged);if(logged){const name=(currentUser.user_metadata?.username||currentUser.email?.split('@')[0]||'Mi perfil');account.textContent='👤 '+name}else account.textContent='👤 Mi perfil'};
+  new MutationObserver(sync).observe(groups,{attributes:true,attributeFilter:['style']});sync();setInterval(sync,700);
+  languages.addEventListener('click',event=>{const button=event.target.closest('[data-menu-language]');if(!button)return;const key=button.dataset.menuLanguage;localStorage.setItem('grouptreff-language',key);window.dispatchEvent(new CustomEvent('grouptreff-language-change',{detail:key}));languages.querySelectorAll('button').forEach(item=>item.classList.toggle('active',item===button))});
+  const markLanguage=()=>{const key=localStorage.getItem('grouptreff-language')||'de';languages.querySelectorAll('button').forEach(button=>button.classList.toggle('active',button.dataset.menuLanguage===key))};markLanguage();window.addEventListener('grouptreff-language-change',markLanguage);
 })();
 </script>
 </body>
