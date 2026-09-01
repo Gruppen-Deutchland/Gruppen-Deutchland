@@ -288,6 +288,10 @@ font-weight:800;
 #detailAgeCheck{display:none!important}.detail-tags{display:block;max-width:510px;height:30px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.detail-tags span{display:inline-block;white-space:nowrap}.detail-tags span+span{margin-left:6px}
 .group-card .group-tags{display:none!important}.group-card .card-description{display:-webkit-box;min-height:38px;margin:0 auto 4px;overflow:hidden;color:#397b78;font-size:13px;line-height:1.35;text-align:center;-webkit-box-orient:vertical;-webkit-line-clamp:2}.group-card .age-badge{display:block!important}.group-card .age-badge.neutral{display:none!important}
 .group-card .group-tags{display:block!important;width:100%;height:19px;min-height:19px;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}.group-card .group-tags .small{display:inline!important;color:#18232b;font-size:12px;white-space:nowrap}.dark .group-card .group-tags .small{color:#f8fafc}
+.detail-vote-qr{margin:17px auto 0;padding:14px;max-width:220px;border:1px solid var(--border);border-radius:13px;background:var(--card2)}.detail-vote-qr img{display:block;width:150px;height:150px;margin:8px auto 0;background:#fff;padding:6px;border-radius:9px}.detail-vote-qr strong{font-size:13px;color:var(--primary-dark)}.detail-vote-qr span{display:block;font-size:11px;color:var(--muted);margin-top:5px}
+#detailVoteQr{display:none!important}.detail-warning+.detail-link-label{margin-top:14px;color:var(--primary-dark)}
+.group-detail-box{max-width:560px;padding:26px 22px}.group-detail-box .detail-cover{width:78px;height:78px;border-width:3px;margin:0 auto 10px}.group-detail-box h2{font-size:21px;margin-bottom:8px}.group-detail-box .detail-subtitle{font-size:15px;color:#17212b;margin-bottom:11px}.group-detail-box .detail-description{max-width:520px;margin-bottom:15px;font-size:13px}.group-detail-box .detail-tags{display:none!important}.group-detail-box .detail-join{max-width:260px;padding:12px 14px;font-size:14px}.group-detail-box .detail-warning{max-width:470px;margin:12px auto;font-size:10px}.detail-adult-badge{display:none;width:max-content;margin:0 auto 10px;background:#e73446;color:#fff;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:900}.detail-adult-badge.show{display:block}.group-detail-box .detail-actions{max-width:360px;grid-template-columns:1fr;margin:18px auto 8px}.group-detail-box .detail-actions button{background:#25D366;color:#fff;border-color:#25D366}.group-detail-box .detail-actions button:last-child{background:#128C7E}.group-detail-box .detail-link-label{max-width:480px;text-align:center;margin:7px auto 5px;color:var(--muted);font-size:11px}.group-detail-box .detail-link-row{max-width:480px}.detail-vote-qr{display:block!important;margin:20px auto 0}.detail-vote-qr strong{display:block}.detail-vote-qr img{width:145px;height:145px}
+#detailVoteQr.detail-vote-qr{display:block!important}
 </style>
 </head>
 <body>
@@ -376,6 +380,9 @@ function shortGroupId(id){let hash=0;for(const char of String(id||"")){hash=((ha
 function groupSlug(name){return String(name||"gruppe").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/ß/g,"ss").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,55)||"gruppe"}
 function groupPathKey(group){return `${groupSlug(group?.name)}-${shortGroupId(group?.id)}`}
 function groupPageUrl(group){return `${GROUPTREFF_URL}g/${encodeURIComponent(typeof group==="object"?groupPathKey(group):shortGroupId(group))}`}
+function ensureVoteQr(){let box=$("#detailVoteQr");if(box)return box;box=document.createElement("div");box.id="detailVoteQr";box.className="detail-vote-qr";box.innerHTML='<strong>📲 QR-Code der Gruppe</strong><img id="detailVoteQrImage" alt="QR-Code für die Gruppenseite"><span>Scanne den Code, um die Gruppenkarte zu öffnen.</span>';$("#detailPageLink").closest(".detail-link-row").insertAdjacentElement("afterend",box);return box}
+function placeVoteLink(){const actions=$(".detail-actions"),label=document.querySelector('label[for="detailPageLink"]'),row=$("#detailPageLink")?.closest(".detail-link-row");if(actions&&label&&row){actions.insertAdjacentElement("afterend",label);label.insertAdjacentElement("afterend",row);row.insertAdjacentElement("afterend",ensureVoteQr())}}
+function setAdultBadge(adult){let badge=$("#detailAdultBadge");if(!badge){badge=document.createElement("div");badge.id="detailAdultBadge";badge.className="detail-adult-badge";badge.textContent="🔞 Ab 18+";$("#detailJoin").insertAdjacentElement("afterend",badge)}badge.classList.toggle("show",adult)}
 function openGroupDetail(g){
   if(!g)return;
   state.detail=g;
@@ -383,13 +390,18 @@ function openGroupDetail(g){
   if(g.image_url){img.src=g.image_url;img.style.display="block";fallback.style.display="none"}else{img.removeAttribute("src");img.style.display="none";fallback.style.display="grid"}
   img.onerror=()=>{img.style.display="none";fallback.style.display="grid"};
   $("#detailTitle").textContent=g.name||"WhatsApp Gruppe";
-  $("#detailSubtitle").innerHTML=`${countryFlagSvg(g.country||"DE",true)}<span>${esc(countryInfo(g.country).name)} · ${esc(normalizeCategory(g.category||"Community"))}</span>`;
+  $("#detailSubtitle").innerHTML=`${countryFlagSvg(g.country||"DE",true)}<span>Dieser Gruppe beitreten</span>${countryFlagSvg(g.country||"DE",true)}`;
   $("#detailDescription").textContent=g.description||"Entdecke diese Gruppe und tritt dem Chat bei.";
   const tags=Array.isArray(g.tags)?g.tags:[];
   $("#detailTags").innerHTML=tags.slice(0,8).map(t=>`<span>#${esc(String(t).replace(/^#/,""))}</span>`).join("");
   $("#detailJoin").href=g.invite_url||"#";
   $("#detailJoin").style.display="flex";
-  $("#detailPageLink").value=groupPageUrl(g);
+  const groupUrl=groupPageUrl(g),voteUrl=`${groupUrl}?vote=1`;
+  $("#detailPageLink").value=voteUrl;
+  document.querySelector('label[for="detailPageLink"]').textContent="Platziere diesen Link in deiner Gruppenbeschreibung, damit deine Gruppe in den Suchergebnissen weiter oben erscheint.";
+  ensureVoteQr().querySelector("#detailVoteQrImage").src=`https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(groupUrl)}`;
+  setAdultBadge(normalizeCategory(g.category||"")==="Adult");
+  placeVoteLink();
   openModal("detailModal");
 }
 $("#detailAgeLeave")?.addEventListener("click",()=>closeModal("detailModal"));
