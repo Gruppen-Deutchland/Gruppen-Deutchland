@@ -413,6 +413,29 @@ font-weight:800;
   .nav-search{width:min(235px,23vw)}.nav-right{gap:5px}.nav-btn{padding:8px 10px;font-size:12px}
   .nav .add-btn{padding:9px 12px}.language-switch{margin-right:0}
 }
+/* PC: acceso al mismo menú compacto de tres líneas */
+@media (min-width:921px){
+  header .nav{position:relative;padding-right:122px!important}
+  header .mobile-menu-toggle{display:grid!important;place-items:center;position:absolute;right:22px;top:14px;width:40px;height:40px;border:1px solid rgba(255,255,255,.58);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-size:24px;line-height:1;z-index:130}
+  header .mobile-add-toggle{display:grid!important;place-items:center;position:absolute;right:70px;top:14px;width:40px;height:40px;border:1px solid #fff;border-radius:10px;background:#fff;color:#08743a;font-size:25px;font-weight:700;line-height:1;z-index:130}
+  header .nav-right{display:none!important;position:absolute!important;top:65px!important;right:20px!important;width:270px!important;margin:0!important;padding:51px 14px 14px!important;border:1px solid rgba(255,255,255,.45)!important;border-radius:16px!important;background:#25D366!important;box-shadow:0 14px 28px rgba(4,50,25,.34)!important;z-index:120!important}
+  header .nav.mobile-menu-open .nav-right{display:flex!important;flex-direction:column;align-items:stretch;gap:8px}
+  header .nav.mobile-menu-open .nav-right .nav-btn{display:flex!important;position:static!important;justify-content:flex-start;width:100%;min-height:43px!important;padding:10px 13px!important;border:1px solid #bde8c9!important;border-radius:10px!important;background:#fff!important;color:#176438!important;font-size:13px!important;font-weight:800!important}
+  header .nav.mobile-menu-open .nav-right .nav-btn:hover{background:#d9f4e2!important}
+  header .nav.mobile-menu-open .nav-right .add-btn,header .nav.mobile-menu-open .nav-right #installApp,header .nav.mobile-menu-open .nav-right #openMyGroups,header .nav.mobile-menu-open .nav-right #logoutBtn{display:none!important}
+  header .nav-search{margin-left:auto!important;margin-right:0!important}
+}
+/* El idioma se controla desde el menú de tres líneas */
+.language-switch{display:none!important}
+@media (min-width:921px){
+  header .nav-search{background:#fff!important;border-color:#fff!important}
+  header .nav-search input{color:#1f2937!important}
+  header .nav-search input::placeholder{color:#718096!important}
+  header .nav-search button{color:#15803d!important}
+}
+/* Fondos decorativos para modo día y modo noche */
+body{background-color:#f7faf8;background-image:url('grouptreff-background-day.jpg');background-repeat:repeat;background-size:360px auto;background-attachment:fixed}
+body.dark{background-color:#0f172a;background-image:url('grouptreff-background-night.jpg')}
 </style>
 </head>
 <body>
