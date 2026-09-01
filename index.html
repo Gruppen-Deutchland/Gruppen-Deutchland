@@ -393,6 +393,26 @@ font-weight:800;
   header .nav.mobile-menu-open .nav-right .add-btn,header .nav.mobile-menu-open .nav-right #installApp,header .nav.mobile-menu-open .nav-right #openMyGroups,header .nav.mobile-menu-open .nav-right #logoutBtn{display:none!important}
   header .nav.mobile-menu-open .nav-right .nav-profile-trigger{background:#fff!important;color:#176438!important}
 }
+/* Cabecera de escritorio: misma composición clara y visual de la versión móvil */
+@media (min-width:921px){
+  header{min-height:66px;background:linear-gradient(100deg,#14a84b 0%,#16a34a 62%,#119547 100%)}
+  .nav{max-width:1240px;min-height:66px;padding:0 22px;gap:10px;justify-content:flex-start}
+  .nav .logo{min-width:168px}
+  .logo-image{width:145px}
+  .language-switch{margin:0 4px 0 0}
+  .language-trigger{height:38px;min-width:48px;border-radius:10px}
+  .nav-search{order:initial;margin:0;width:282px;min-width:200px;height:39px;border-radius:999px}
+  .nav-right{order:initial;margin:0 0 0 auto;gap:8px;flex-wrap:nowrap}
+  .nav-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:8px 16px;line-height:1.25;text-align:center;border-radius:999px;font-size:13px}
+  .nav .add-btn{order:0;min-height:42px;padding:9px 17px;border-radius:9px;white-space:nowrap}
+  #openAuth{max-width:160px;white-space:normal}
+  #mobileLanguage,#mobileTheme{max-width:122px;white-space:normal}
+}
+@media (min-width:921px) and (max-width:1120px){
+  .nav{padding:0 14px;gap:6px}.nav .logo{min-width:142px}.logo-image{width:132px}
+  .nav-search{width:min(235px,23vw)}.nav-right{gap:5px}.nav-btn{padding:8px 10px;font-size:12px}
+  .nav .add-btn{padding:9px 12px}.language-switch{margin-right:0}
+}
 </style>
 </head>
 <body>
