@@ -17,12 +17,14 @@
 <meta property="og:site_name" content="GroupTreff">
 <meta property="og:title" content="GroupTreff | WhatsApp Gruppen Verzeichnis">
 <meta property="og:description" content="Entdecke beliebte WhatsApp- und Telegram-Gruppen in Deutschland.">
-<meta property="og:image" content="https://grouptreff.de/share-preview.png?v=7">
-<meta property="og:image:width" content="423">
-<meta property="og:image:height" content="469">
+<meta property="og:image" content="https://grouptreff.de/share-preview.png?v=8">
+<meta property="og:image:secure_url" content="https://grouptreff.de/share-preview.png?v=8">
+<meta property="og:image:width" content="1730">
+<meta property="og:image:height" content="909">
+<meta property="og:image:alt" content="GroupTreff – grupos de WhatsApp y Telegram">
 <meta property="og:url" content="https://grouptreff.de/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://grouptreff.de/share-preview.png?v=7">
+<meta name="twitter:image" content="https://grouptreff.de/share-preview.png?v=8">
 
 <title>GroupTreff | WhatsApp Gruppen Verzeichnis</title>
 <meta name="description" content="Entdecke beliebte WhatsApp-Gruppen in Deutschland. Suche nach Kategorien, stimme für Gruppen ab und teile sie mit Freunden.">
@@ -451,7 +453,7 @@ function clearNotice(id){const n=$("#"+id);if(n)n.className="notice"}
 function updateAuthUI(){const logged=!!currentUser;$("#openAuth").style.display=logged?"none":"inline-flex";$("#openMyGroups").style.display=logged?"inline-flex":"none";$("#logoutBtn").style.display="none";$("#userLabel").style.display="none";$("#userLabel").textContent=logged?`👋 ${displayName(currentUser)}`:""}
 async function refreshUserSession(){if(!db){updateAuthUI();return}const{data}=await db.auth.getSession();currentUser=data?.session?.user||null;updateAuthUI()}
 function chooseAuthTab(tab){const login=tab==="login";$("#loginForm").style.display=login?"block":"none";$("#registerForm").style.display=login?"none":"block";$("#loginTab").classList.toggle("active",login);$("#registerTab").classList.toggle("active",!login);clearNotice("authNotice")}
-function requestAddGroup(){if(!currentUser){chooseAuthTab("register");showNotice("authNotice","Bitte erstelle ein Konto, um deine Gruppen später verwalten zu können.");openModal("authModal");return}clearNotice("addNotice");openModal("addModal")}
+function requestAddGroup(){clearNotice("addNotice");openModal("addModal")}
 $("#openAdd").addEventListener("click",requestAddGroup);$("#openAdd2").addEventListener("click",requestAddGroup);$("#openAuth").addEventListener("click",()=>{chooseAuthTab("login");openModal("authModal")});$("#loginTab").addEventListener("click",()=>chooseAuthTab("login"));$("#registerTab").addEventListener("click",()=>chooseAuthTab("register"));
 $("#loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){showNotice("authNotice","Supabase ist nicht konfiguriert.");return}const form=e.currentTarget,fd=new FormData(form),btn=form.querySelector("button[type=submit]"),old=btn.textContent;btn.disabled=true;btn.textContent="Anmeldung…";const{data,error}=await db.auth.signInWithPassword({email:String(fd.get("email")).trim(),password:String(fd.get("password"))});btn.disabled=false;btn.textContent=old;if(error){showNotice("authNotice",`Anmeldung fehlgeschlagen: ${error.message}`);return}currentUser=data.user;updateAuthUI();form.reset();closeModal("authModal")});
 $("#registerForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){showNotice("authNotice","Supabase ist nicht konfiguriert.");return}const form=e.currentTarget,fd=new FormData(form),password=String(fd.get("password")),confirm=String(fd.get("password_confirm")),username=String(fd.get("username")).trim();if(password!==confirm){showNotice("authNotice","Die Passwörter stimmen nicht überein.");return}const btn=form.querySelector("button[type=submit]"),old=btn.textContent;btn.disabled=true;btn.textContent="Registrierung…";const{data,error}=await db.auth.signUp({email:String(fd.get("email")).trim(),password,options:{data:{username}}});btn.disabled=false;btn.textContent=old;if(error){showNotice("authNotice",`Registrierung fehlgeschlagen: ${error.message}`);return}currentUser=data.session?.user||null;updateAuthUI();form.reset();if(currentUser){closeModal("authModal");showNotice("addNotice","✅ Konto erstellt. Du kannst jetzt deine Gruppe einreichen.","ok");openModal("addModal")}else{chooseAuthTab("login");showNotice("authNotice","✅ Konto erstellt. Bitte bestätige die E-Mail und melde dich danach an.","ok")}});
@@ -539,6 +541,8 @@ $("#addForm").addEventListener("submit",async e=>{e.preventDefault();const form=
 function groupPublishMetadata(inviteUrl){return db.functions.invoke("group-metadata",{body:{invite_url:inviteUrl}}).then(({data,error})=>{if(error)throw error;if(!data?.name)throw new Error(data?.error||"Die Gruppendaten konnten nicht gelesen werden.");return data})}
 function setupProfilePublishing(){
   const form=$("#addForm");
+  const addModalSubtitle=$("#addModal .modal-sub");
+  if(addModalSubtitle)addModalSubtitle.textContent="Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht. Du kannst auch anonym veröffentlichen – ein Konto ist nicht erforderlich.";
   ["name","platform","image_file"].forEach(field=>form.querySelector(`[name="${field}"]`)?.closest(".form-group")?.remove());
   form.querySelector('[name="description"]')?.closest(".form-group")?.querySelector("label")?.replaceChildren("Beschreibung (optional)");
   const tagsInput=form.querySelector('[name="tags"]');
@@ -554,7 +558,6 @@ function setupProfilePublishing(){
   document.addEventListener("submit",async e=>{
     if(e.target.id!=="addForm"||!db)return;
     e.preventDefault();e.stopImmediatePropagation();
-    if(!currentUser){requestAddGroup();return}
     const fd=new FormData(e.target),notice=$("#addNotice"),button=e.target.querySelector(".submit"),old=button.textContent;
     const inviteUrl=String(fd.get("invite_url")||"").trim();
     button.disabled=true;button.textContent="Gruppendaten werden geladen…";
@@ -562,7 +565,7 @@ function setupProfilePublishing(){
       const meta=await groupPublishMetadata(inviteUrl);
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
-      const row={name:meta.name.slice(0,80),platform:meta.platform,country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:meta.image_url||"",description,tags,status:"pending",user_id:currentUser.id,owner_name:displayName(currentUser),owner_avatar:currentUser.user_metadata?.avatar_data||""};
+      const row={name:meta.name.slice(0,80),platform:meta.platform,country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:meta.image_url||"",description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
       const {data,error}=await db.from("groups").insert(row).select("id,name,country").single();
       if(error)throw error;
       rememberSubmittedGroup({id:data.id,invite_url:inviteUrl,name:data.name,country:data.country});
