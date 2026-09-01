@@ -360,6 +360,19 @@ font-weight:800;
   .profile-page{background:#f4f6f5}.profile-page #myGroupsModal{min-height:calc(100vh - 54px);padding:0 6px 128px;align-items:flex-start}.profile-page #myGroupsModal .modal-box{max-width:none;padding:0 16px 20px;border-radius:0 0 16px 16px;box-shadow:0 7px 20px rgba(16,55,34,.10);overflow:visible}.profile-page .profile-identity{flex-direction:column;gap:7px;text-align:center;margin:0 0 9px}.profile-page .profile-avatar-wrap{width:96px;height:96px;flex-basis:96px;margin-top:-48px}.profile-page .profile-avatar{width:96px;height:96px;border-width:4px;background:#e7f8eb;font-size:39px;box-shadow:0 4px 12px rgba(0,0,0,.17)}.profile-page .profile-avatar-edit{width:30px;height:30px;font-size:14px}.profile-page .profile-identity h2{font-size:21px;margin:0}.profile-page .profile-identity .modal-sub{font-size:12px}.profile-page .my-groups-head{text-align:center;margin-top:4px}.profile-page .my-groups-head .modal-sub{font-size:13px;line-height:1.4}.profile-page #refreshMyGroups{display:none!important}.profile-page .profile-socials{margin:12px 0;padding:11px;text-align:left}.profile-page .my-groups-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:none;margin-top:14px}.profile-page .my-group-item{display:flex;min-width:0;flex-direction:column;align-items:stretch;gap:6px;padding:7px;border-radius:10px}.profile-page .my-group-thumb{width:100%;height:94px;border-radius:7px;object-fit:cover}.profile-page .my-group-item h3{font-size:13px;line-height:1.2}.profile-page .my-group-item .small{display:none}.profile-page .my-group-actions{display:block}.profile-page .my-group-actions .mini-green-btn{display:flex;justify-content:center;padding:7px;font-size:11px}.profile-page footer{display:block!important;position:fixed;left:0;right:0;bottom:0;z-index:950;background:#0d442b}.profile-page footer .footer-inner{display:none!important}.profile-page .footer-app-install{margin:0;border-top:3px solid #21c767}.profile-page .footer-app-inner{padding:8px 10px;gap:8px}.profile-page .footer-app-icon{width:38px;height:38px}.profile-page .footer-app-copy strong{font-size:12px}.profile-page .footer-app-copy span{display:none}.profile-page .footer-install-btn{padding:9px 10px;font-size:11px;white-space:nowrap}
   .groups-grid{padding:0 6px!important;gap:8px}.group-card{height:205px;border-radius:8px;background:#fff;box-shadow:0 3px 9px rgba(20,75,43,.13)}.group-card .group-image{display:block;height:104px;padding:0;overflow:hidden;background:#e3f6e9}.group-card .group-image>div[role="button"],.group-card .group-image>div[role="button"] img,.group-card .group-image>div[role="button"] .image-fallback{width:100%!important;height:104px!important;margin:0!important;border-radius:0!important}.group-card .group-image>div[role="button"] img{object-fit:cover}.group-card .owner-badge{top:6px;left:6px;max-width:104px;height:20px;font-size:9px}.group-card .top-vote{top:auto;bottom:6px;right:6px;padding:4px 6px;border-radius:999px;background:rgba(20,28,34,.74);color:#fff;font-size:10px}.group-card .online-dot{display:none}.group-card .group-content{height:101px;padding:6px 8px 7px;align-items:flex-start;text-align:left}.group-card .group-title{min-height:17px;margin:0 0 3px;font-size:13px;-webkit-line-clamp:1}.group-card .group-category{display:none}.group-card .card-description{min-height:29px;margin:0;color:#68746d;font-size:10px;text-align:left;-webkit-line-clamp:2}.group-card .group-tags{display:none!important}.group-card .group-card-footer{height:18px;grid-template-columns:1fr 22px auto;gap:3px}.group-card .group-date{font-size:9px;line-height:16px}.group-card .group-share{font-size:16px;line-height:16px}.group-card .age-badge{padding:2px 4px;font-size:9px;line-height:13px}.groups-heading{margin:12px 10px 9px!important}.groups-heading h2{font-size:18px!important}.directory-bar{margin-left:10px!important;margin-right:10px!important}
 }
+/* Búsqueda siempre visible en la parte superior */
+@media(max-width:920px){
+  .nav{min-height:108px!important}
+  .nav-search{display:flex!important;position:absolute!important;left:14px!important;right:14px!important;top:57px!important;transform:none!important;width:auto!important;height:39px!important;background:#fff!important;border-color:rgba(255,255,255,.8)!important;z-index:5}
+  .nav-search input{color:#1f2937!important}.nav-search input::placeholder{color:#718096!important}.nav-search button{color:#15803d!important}
+  .nav .add-btn{display:none!important}
+}
+/* Panel lateral exclusivo de perfiles en móvil */
+@media(max-width:620px){
+  .profile-drawer-backdrop{display:none;position:fixed;inset:0;z-index:1400;background:rgba(5,30,18,.45);backdrop-filter:blur(3px)}.profile-drawer-backdrop.open{display:block}
+  .profile-drawer{position:absolute;top:0;right:0;width:min(82vw,330px);height:100%;padding:66px 26px 20px;background:linear-gradient(145deg,#168547,#08743a);color:#fff;box-shadow:-14px 0 30px rgba(4,50,25,.34);transform:translateX(105%);transition:transform .25s ease}.profile-drawer-backdrop.open .profile-drawer{transform:translateX(0)}
+  .profile-drawer-close{position:absolute;top:13px;right:14px;width:35px;height:35px;border:1px solid rgba(255,255,255,.34);border-radius:9px;background:rgba(255,255,255,.12);color:#fff;font-size:23px}.profile-drawer-title{margin:0 0 12px;color:rgba(255,255,255,.62);font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.profile-drawer-action{display:flex;width:100%;align-items:center;gap:12px;border:0;border-bottom:1px solid rgba(255,255,255,.12);background:transparent;color:#fff;padding:13px 0;text-align:left;font-size:14px}.profile-drawer-icon{width:21px;text-align:center;font-size:19px}.profile-drawer-section{margin-top:28px}.profile-drawer-theme{display:flex;justify-content:space-between;align-items:center;width:100%;border:1px solid rgba(255,255,255,.20);border-radius:12px;background:rgba(255,255,255,.12);color:#fff;padding:11px 13px;font-weight:800}.profile-drawer-languages{display:grid;gap:3px}.profile-drawer-language{display:grid;grid-template-columns:30px 1fr 18px;align-items:center;gap:8px;border:0;border-radius:10px;background:transparent;color:#fff;padding:11px 10px;text-align:left;font-size:13px;font-weight:700}.profile-drawer-language.active{background:rgba(255,255,255,.18)}.profile-drawer-app{position:absolute;left:18px;right:18px;bottom:17px;padding-top:13px;border-top:1px solid rgba(255,255,255,.22)}.profile-drawer-app strong{display:block;font-size:12px}.profile-drawer-app p{margin:4px 0 10px;color:rgba(255,255,255,.72);font-size:11px;line-height:1.35}.profile-drawer-install{width:100%;border:0;border-radius:10px;background:#23cf69;color:#fff;padding:11px;font-weight:900}.profile-page .nav.mobile-menu-open .nav-right{display:none!important}
+}
 </style>
 </head>
 <body>
@@ -790,6 +803,7 @@ openSharedGroupFromUrl();
 loadGroups();
 
 </script>
+</script>
 
 <div class="app-install-overlay" id="appInstallOverlay" aria-hidden="true">
   <div class="app-install-card" role="dialog" aria-modal="true" aria-labelledby="appInstallTitle">
@@ -931,6 +945,24 @@ loadGroups();
     menu.setAttribute("aria-expanded", "false");
     menu.setAttribute("aria-label", "Menü öffnen");
   });
+})();
+</script>
+<script>
+(() => {
+  const profilePage = new URLSearchParams(location.search).has("user") || new URLSearchParams(location.search).get("profile")==="1";
+  const trigger = document.getElementById("mobileMenuToggle");
+  if (!profilePage || !trigger) return;
+  const panel = document.createElement("div");
+  panel.className = "profile-drawer-backdrop";
+  panel.innerHTML = `<aside class="profile-drawer" aria-label="Menú de perfil"><button class="profile-drawer-close" type="button" aria-label="Cerrar">×</button><p class="profile-drawer-title">Menú</p><button class="profile-drawer-action" data-drawer="add"><span class="profile-drawer-icon">＋</span>Agregar grupo</button><button class="profile-drawer-action" data-drawer="auth"><span class="profile-drawer-icon">♙</span>Registro</button><div class="profile-drawer-section"><p class="profile-drawer-title">Idioma / Language / Idioma</p><div class="profile-drawer-languages"><button class="profile-drawer-language active" type="button"><b>DE</b><span>Alemán</span><b>✓</b></button><button class="profile-drawer-language" type="button"><b>US</b><span>Inglés (EE. UU.)</span><b></b></button><button class="profile-drawer-language" type="button"><b>GB</b><span>Inglés (Reino Unido)</span><b></b></button><button class="profile-drawer-language" type="button"><b>ES</b><span>Español</span><b></b></button></div></div><div class="profile-drawer-app"><strong>📲 Instala la aplicación GroupTreff</strong><p>Accede más rápido desde la pantalla de inicio.</p><button class="profile-drawer-install" type="button">⚡ Instalar ahora</button></div></aside>`;
+  document.body.appendChild(panel);
+  const close = () => panel.classList.remove("open");
+  trigger.addEventListener("click", event => { event.stopImmediatePropagation(); document.querySelector(".nav")?.classList.remove("mobile-menu-open"); panel.classList.toggle("open"); }, true);
+  panel.addEventListener("click", event => { if (event.target === panel || event.target.closest(".profile-drawer-close")) close(); });
+  panel.querySelector('[data-drawer="add"]')?.addEventListener("click",()=>{close();document.getElementById("openAdd")?.click()});
+  panel.querySelector('[data-drawer="auth"]')?.addEventListener("click",()=>{close();document.getElementById("openAuth")?.click()});
+  panel.querySelector(".profile-drawer-install")?.addEventListener("click",()=>{close();document.getElementById("installAppFooter")?.click()});
+  panel.querySelectorAll(".profile-drawer-language").forEach(button=>button.addEventListener("click",()=>{panel.querySelectorAll(".profile-drawer-language").forEach(item=>item.classList.remove("active"));button.classList.add("active")}));
 })();
 </script>
 </body>
