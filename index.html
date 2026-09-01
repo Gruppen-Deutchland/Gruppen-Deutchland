@@ -351,7 +351,7 @@ font-weight:800;
 .profile-socials{margin:15px 0;padding:14px;border:1px solid var(--border);border-radius:14px;background:var(--card2)}.profile-socials h3{font-size:15px;margin-bottom:4px}.profile-socials p{font-size:12px;color:var(--muted);margin-bottom:12px}.social-inputs{display:grid;grid-template-columns:1fr 1fr;gap:9px}.social-inputs input{width:100%;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:9px;padding:9px;font-size:12px}.profile-social-save{margin-top:11px;width:100%;border:0;border-radius:9px;padding:10px;background:var(--primary);color:#fff;font-weight:800}.public-socials{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;max-width:680px;margin:0 auto 16px}.public-socials a{display:inline-flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid #b8e7c5;border-radius:999px;background:#effbf2;color:#15733b;text-decoration:none;font-size:12px;font-weight:800}.public-socials a:hover{background:#dcf7e3}@media(max-width:520px){.social-inputs{grid-template-columns:1fr}}
 
 /* Perfil y directorio para móviles: composición compacta inspirada en la referencia */
-.mobile-menu-toggle{display:none}
+.mobile-menu-toggle,.mobile-add-toggle{display:none}
 @media(max-width:620px){
   header{min-height:54px}.nav{min-height:54px!important;height:54px;padding:0 10px!important;align-items:center!important}.nav .logo{margin:0!important}.logo-image{width:128px!important}.language-switch{display:none!important}
   .mobile-menu-toggle{display:grid;place-items:center;position:absolute;right:10px;top:8px;width:38px;height:38px;border:1px solid rgba(255,255,255,.55);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-size:25px;line-height:1;z-index:130}
@@ -376,10 +376,27 @@ font-weight:800;
 /* Móvil: mismas tarjetas que escritorio, solo dos columnas adaptadas */
 @media(max-width:620px){.groups-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding:0 14px!important;gap:14px!important}.group-card{height:320px!important;border-radius:5px!important;background:linear-gradient(145deg,#ecfff1,#d8f8e3)!important}.group-card .group-image{height:164px!important;display:grid!important;place-items:center!important;padding:0!important;overflow:visible!important;background:transparent!important}.group-card .group-image>div[role="button"],.group-card .group-image>div[role="button"] img,.group-card .group-image>div[role="button"] .image-fallback{width:118px!important;height:118px!important;border-radius:50%!important}.group-card .group-content{height:156px!important;padding:4px 12px 10px!important;align-items:center!important;text-align:center!important}.group-card .group-title{font-size:17px!important;min-height:41px!important;-webkit-line-clamp:2!important}.group-card .group-category{display:block!important}.group-card .card-description{display:-webkit-box!important;min-height:38px!important;text-align:center!important;font-size:13px!important}.group-card .group-tags{display:block!important}.group-card .online-dot{display:block!important}.group-card .top-vote{top:6px!important;right:6px!important;bottom:auto!important;background:transparent!important;color:#13212b!important;font-size:14px!important}}
 @media(max-width:470px){.groups-grid{gap:10px!important;padding:0 10px!important}.group-card{height:302px!important}.group-card .group-image{height:151px!important}.group-card .group-image>div[role="button"],.group-card .group-image>div[role="button"] img,.group-card .group-image>div[role="button"] .image-fallback{width:108px!important;height:108px!important}.group-card .group-content{height:151px!important;padding-left:8px!important;padding-right:8px!important}.group-card .group-title{font-size:15px!important;min-height:36px!important}}
+/* Ajuste final: cabecera y menú móvil sin superposiciones */
+@media(max-width:620px){
+  header{min-height:108px!important}
+  header .nav{height:108px!important;min-height:108px!important;padding:0 10px!important;align-items:flex-start!important}
+  header .nav .logo{position:absolute;left:10px;top:11px;margin:0!important;z-index:6}
+  header .logo-image{width:128px!important}
+  header .mobile-menu-toggle{top:8px;right:10px;z-index:1601}
+  header .mobile-add-toggle{display:grid;place-items:center;position:absolute;right:56px;top:8px;width:38px;height:38px;border:1px solid rgba(255,255,255,.55);border-radius:10px;background:#fff;color:#08743a;font-size:25px;font-weight:700;line-height:1;z-index:1601}
+  header .nav-search{top:57px!important;left:10px!important;right:10px!important;width:auto!important;z-index:5}
+  /* El menú ocupa un panel verde completo, con texto blanco legible. */
+  header .nav-right{position:fixed!important;top:8px!important;right:8px!important;width:min(78vw,278px)!important;height:auto!important;min-height:0!important;padding:50px 14px 14px!important;border:1px solid rgba(255,255,255,.45)!important;border-radius:16px!important;background:#25D366!important;box-shadow:0 14px 28px rgba(4,50,25,.34)!important;z-index:1600!important}
+  header .nav.mobile-menu-open .nav-right{display:flex!important}
+  header .nav.mobile-menu-open .nav-right .nav-btn{justify-content:flex-start!important;border-color:#bde8c9!important;border-radius:10px!important;background:#fff!important;color:#176438!important;font-size:13px!important;font-weight:800!important}
+  header .nav.mobile-menu-open .nav-right .nav-btn:hover{background:#d9f4e2!important}
+  header .nav.mobile-menu-open .nav-right .add-btn,header .nav.mobile-menu-open .nav-right #installApp,header .nav.mobile-menu-open .nav-right #openMyGroups,header .nav.mobile-menu-open .nav-right #logoutBtn{display:none!important}
+  header .nav.mobile-menu-open .nav-right .nav-profile-trigger{background:#fff!important;color:#176438!important}
+}
 </style>
 </head>
 <body>
-<header><div class="nav"><a class="logo" href="https://grouptreff.de/" aria-label="GroupTreff Startseite" style="text-decoration:none;color:inherit">GroupTreff</a><form class="nav-search" id="navSearch"><input id="navSearchInput" type="search" placeholder="Gruppen suchen..."><button type="submit" aria-label="Gruppen suchen">🔎</button></form><div class="nav-right"><span class="user-label" id="userLabel" style="display:none"></span><button class="nav-btn" id="installApp" type="button" style="display:none">⬇️ App</button><button class="nav-btn" id="openAuth" type="button">👤 Anmelden</button><button class="nav-btn" id="openMyGroups" type="button" style="display:none">📂 Meine Gruppen</button><button class="nav-btn" id="logoutBtn" type="button" style="display:none">Abmelden</button><button class="nav-btn add-btn" id="openAdd">＋ Gruppe hinzufügen</button></div></div></header>
+<header><div class="nav"><a class="logo" href="https://grouptreff.de/" aria-label="GroupTreff Startseite" style="text-decoration:none;color:inherit">GroupTreff</a><form class="nav-search" id="navSearch"><input id="navSearchInput" type="search" placeholder="Gruppen suchen..."><button type="submit" aria-label="Gruppen suchen">🔎</button></form><div class="nav-right"><span class="user-label" id="userLabel" style="display:none"></span><button class="nav-btn" id="installApp" type="button" style="display:none">⬇️ App</button><button class="nav-btn" id="openAuth" type="button">👤 Anmelden / Registrieren</button><button class="nav-btn mobile-menu-option" id="mobileLanguage" type="button">🌐 Sprache ändern</button><button class="nav-btn mobile-menu-option" id="mobileTheme" type="button">🌙 Nachtmodus</button><button class="nav-btn" id="openMyGroups" type="button" style="display:none">📂 Meine Gruppen</button><button class="nav-btn" id="logoutBtn" type="button" style="display:none">Abmelden</button><button class="nav-btn add-btn" id="openAdd">＋ Gruppe hinzufügen</button></div></div></header>
 <section class="hero"><h1>Finde deine <span>WhatsApp Community</span></h1><p>Entdecke WhatsApp- und Telegram-Gruppen aus Deutschland, USA, Spanien, Australien und England. Filtere nach Land und Kategorie und teile Gruppen direkt mit Freunden.</p><div class="search-box"><input id="search" type="search" placeholder="Gruppen nach Name, Thema oder Tag suchen..."><div class="search-icon">🔎</div></div><div class="stats"><div class="stat">📚 <strong id="totalGroups">0</strong> Gruppen</div><div class="stat">⭐ Ranking nach Stimmen</div><div class="stat">📱 Responsive Verzeichnis</div></div></section>
 <main class="container">
 <div class="country-directory">
@@ -433,7 +450,7 @@ if(navBar){
   const renderLanguage=()=>{const current=languageChoices[localStorage.getItem("grouptreff-language")||"de"]||languageChoices.de;document.documentElement.lang=current.lang;trigger.textContent=`${current.code} ▾`;menu.innerHTML=Object.entries(languageChoices).map(([key,item])=>`<button type="button" role="menuitem" data-language="${key}" class="${item===current?"active":""}"><span>${item.code}</span><span>${item.label}</span><span class="language-check">${item===current?"✓":""}</span></button>`).join("")};
   renderLanguage();
   trigger.addEventListener("click",()=>{const open=languageSwitch.classList.toggle("open");trigger.setAttribute("aria-expanded",String(open))});
-  menu.addEventListener("click",event=>{const key=event.target.closest("[data-language]")?.dataset.language;if(!key)return;localStorage.setItem("grouptreff-language",key);languageSwitch.classList.remove("open");trigger.setAttribute("aria-expanded","false");renderLanguage()});
+  menu.addEventListener("click",event=>{const key=event.target.closest("[data-language]")?.dataset.language;if(!key)return;localStorage.setItem("grouptreff-language",key);languageSwitch.classList.remove("open");trigger.setAttribute("aria-expanded","false");renderLanguage();window.dispatchEvent(new CustomEvent("grouptreff-language-change",{detail:key}))});
   document.addEventListener("click",event=>{if(!languageSwitch.contains(event.target)){languageSwitch.classList.remove("open");trigger.setAttribute("aria-expanded","false")}});
   navBar.insertBefore(languageSwitch,navBar.querySelector("#navSearch"));
 }
@@ -937,6 +954,54 @@ loadGroups();
     menu.setAttribute("aria-expanded", "false");
     nav.appendChild(menu);
   }
+  let addButton = document.getElementById("mobileAddToggle");
+  if (!addButton) {
+    addButton = document.createElement("button");
+    addButton.id = "mobileAddToggle";
+    addButton.className = "mobile-add-toggle";
+    addButton.type = "button";
+    addButton.textContent = "＋";
+    addButton.setAttribute("aria-label", "Gruppe hinzufügen");
+    nav.appendChild(addButton);
+  }
+  addButton.addEventListener("click", () => document.getElementById("openAdd")?.click());
+  const themeButton = document.getElementById("mobileTheme");
+  themeButton?.addEventListener("click", () => {
+    const dark = document.body.classList.toggle("dark");
+    localStorage.setItem("darkMode", dark ? "1" : "");
+    applyPageLanguage(localStorage.getItem("grouptreff-language") || "de");
+  });
+  const languageButton = document.getElementById("mobileLanguage");
+  const languages = [["de", "🇩🇪 Deutsch"], ["us", "🇺🇸 English"], ["es", "🇪🇸 Español"]];
+  const pageTranslations = {
+    de:{title:"GroupTreff | WhatsApp Gruppen & Telegram Gruppen finden",search:"Gruppen suchen...",login:"👤 Anmelden / Registrieren",language:"🌐 Sprache ändern",night:"🌙 Nachtmodus",day:"☀️ Tagesmodus",heading:"Aktuelle deutsche WhatsApp Gruppen",platform:"Alle Plattformen",rating:"⭐ Beste Bewertung",votes:"🔥 Meiste Stimmen",newest:"🆕 Neueste zuerst",addTitle:"Hast du eine eigene Gruppe?",addText:"Veröffentliche deine WhatsApp-Gruppe im Verzeichnis und sammle Stimmen.",add:"＋ Meine Gruppe hinzufügen",authTitle:"👤 Dein GroupTreff-Konto",authText:"Ein Konto ist optional. Melde dich an, wenn du deine eingereichten Gruppen später verwalten möchtest.",password:"Dein Passwort"},
+    us:{title:"GroupTreff | Find WhatsApp & Telegram Groups",search:"Search groups...",login:"👤 Log in / Sign up",language:"🌐 Change language",night:"🌙 Night mode",day:"☀️ Day mode",heading:"Current German WhatsApp Groups",platform:"All platforms",rating:"⭐ Best rated",votes:"🔥 Most votes",newest:"🆕 Newest first",addTitle:"Do you have your own group?",addText:"Publish your WhatsApp group in the directory and collect votes.",add:"＋ Add my group",authTitle:"👤 Your GroupTreff account",authText:"An account is optional. Log in to manage groups you submitted later.",password:"Your password"},
+    es:{title:"GroupTreff | Encuentra grupos de WhatsApp y Telegram",search:"Buscar grupos...",login:"👤 Iniciar sesión / Registrarse",language:"🌐 Cambiar idioma",night:"🌙 Modo noche",day:"☀️ Modo día",heading:"Grupos actuales de WhatsApp en Alemania",platform:"Todas las plataformas",rating:"⭐ Mejor valoración",votes:"🔥 Más votos",newest:"🆕 Más recientes",addTitle:"¿Tienes tu propio grupo?",addText:"Publica tu grupo de WhatsApp en el directorio y consigue votos.",add:"＋ Añadir mi grupo",authTitle:"👤 Tu cuenta de GroupTreff",authText:"La cuenta es opcional. Inicia sesión para gestionar más tarde los grupos enviados.",password:"Tu contraseña"}
+  };
+  const applyPageLanguage = key => {
+    const lang = pageTranslations[key] || pageTranslations.de;
+    document.documentElement.lang = key === "us" ? "en" : key;
+    document.title = lang.title;
+    const set = (selector, value) => { const element = document.querySelector(selector); if(element) element.textContent = value; };
+    const placeholder = (selector, value) => { const element = document.querySelector(selector); if(element) element.placeholder = value; };
+    set("#openAuth", lang.login); set("#mobileLanguage", lang.language); set(".groups-heading h2", lang.heading);
+    set(".cta h2", lang.addTitle); set(".cta p", lang.addText); set("#openAdd2", lang.add);
+    set("#authModal h2", lang.authTitle); set("#authModal .modal-sub", lang.authText);
+    placeholder("#navSearchInput", lang.search); placeholder("#loginForm input[type=password]", lang.password);
+    const platform = document.querySelector("#platformFilter option[value='Alle']"); if(platform) platform.textContent=lang.platform;
+    const sort = document.querySelector("#sortFilter"); if(sort){sort.options[0].textContent=lang.rating;sort.options[1].textContent=lang.votes;sort.options[2].textContent=lang.newest;}
+    languageButton.textContent = key === "de" ? lang.language : "🌐 " + languages.find(([code]) => code === key)?.[1].replace(/^..\s/, "");
+    themeButton.textContent = document.body.classList.contains("dark") ? lang.day : lang.night;
+  };
+  applyPageLanguage(localStorage.getItem("grouptreff-language") || "de");
+  window.addEventListener("grouptreff-language-change", event => applyPageLanguage(event.detail));
+  languageButton?.addEventListener("click", () => {
+    const current = localStorage.getItem("grouptreff-language") || "de";
+    const index = Math.max(0, languages.findIndex(([key]) => key === current));
+    const next = languages[(index + 1) % languages.length];
+    localStorage.setItem("grouptreff-language", next[0]);
+    applyPageLanguage(next[0]);
+  });
   menu.addEventListener("click", () => {
     const open = nav.classList.toggle("mobile-menu-open");
     menu.setAttribute("aria-expanded", String(open));
