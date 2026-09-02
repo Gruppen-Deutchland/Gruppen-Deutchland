@@ -445,7 +445,7 @@ body.dark .group-card .top-vote{color:#13212b!important}
 </style>
 </head>
 <body>
-<header><div class="nav"><a class="logo" href="https://grouptreff.de/" aria-label="GroupTreff Startseite" style="text-decoration:none;color:inherit">GroupTreff</a><form class="nav-search" id="navSearch"><input id="navSearchInput" type="search" placeholder="Gruppen suchen..."><button type="submit" aria-label="Gruppen suchen">🔎</button></form><div class="nav-right"><span class="user-label" id="userLabel" style="display:none"></span><button class="nav-btn" id="installApp" type="button" style="display:none">⬇️ App</button><button class="nav-btn" id="openAuth" type="button">👤 Anmelden / Registrieren</button><button class="nav-btn mobile-menu-option" id="mobileLanguage" type="button">🌐 Sprache ändern</button><button class="nav-btn mobile-menu-option" id="mobileTheme" type="button">🌙 Nachtmodus</button><button class="nav-btn" id="openMyGroups" type="button" style="display:none">📂 Meine Gruppen</button><button class="nav-btn" id="logoutBtn" type="button" style="display:none">Abmelden</button><button class="nav-btn add-btn" id="openAdd">＋ Gruppe hinzufügen</button></div></div></header>
+<header><div class="nav"><a class="logo" href="https://grouptreff.de/" aria-label="GroupTreff Startseite" style="text-decoration:none;color:inherit">GroupTreff</a><form class="nav-search" id="navSearch"><input id="navSearchInput" type="search" placeholder="Gruppen suchen..."><button type="submit" aria-label="Gruppen suchen">🔎</button></form><div class="nav-right"><button class="nav-btn add-btn" id="openAdd" type="button">＋ Gruppe hinzufügen</button><button class="nav-btn" id="openAuth" type="button">👤 Anmelden / Registrieren</button><button class="nav-btn" id="openMyGroups" type="button" style="display:none">Mein Konto</button></div></div></header>
 <section class="hero"><h1>Finde deine <span>WhatsApp Community</span></h1><p>Entdecke WhatsApp- und Telegram-Gruppen aus Deutschland, USA, Spanien, Australien und England. Filtere nach Land und Kategorie und teile Gruppen direkt mit Freunden.</p><div class="search-box"><input id="search" type="search" placeholder="Gruppen nach Name, Thema oder Tag suchen..."><div class="search-icon">🔎</div></div><div class="stats"><div class="stat">📚 <strong id="totalGroups">0</strong> Gruppen</div><div class="stat">⭐ Ranking nach Stimmen</div><div class="stat">📱 Responsive Verzeichnis</div></div></section>
 <main class="container">
 <div class="country-directory">
@@ -609,14 +609,14 @@ let currentUser=null;
 function displayName(user){return String(user?.user_metadata?.username||user?.email?.split("@")[0]||"Benutzer")}
 function showNotice(id,message,type="err"){const n=$("#"+id);if(!n)return;n.textContent=message;n.className=`notice show ${type}`}
 function clearNotice(id){const n=$("#"+id);if(n)n.className="notice"}
-function updateAuthUI(){const logged=!!currentUser;$("#openAuth").style.display=logged?"none":"inline-flex";$("#openMyGroups").style.display=logged?"inline-flex":"none";$("#logoutBtn").style.display="none";$("#userLabel").style.display="none";$("#userLabel").textContent=logged?`👋 ${displayName(currentUser)}`:""}
+function updateAuthUI(){const logged=!!currentUser;$("#openAuth")?.style&&( $("#openAuth").style.display=logged?"none":"inline-flex");$("#openMyGroups")?.style&&( $("#openMyGroups").style.display=logged?"inline-flex":"none");$("#logoutBtn")?.style&&($("#logoutBtn").style.display="none");$("#userLabel")?.style&&($("#userLabel").style.display="none");if($("#userLabel"))$("#userLabel").textContent=logged?`👋 ${displayName(currentUser)}`:""}
 async function refreshUserSession(){if(!db){updateAuthUI();return}const{data}=await db.auth.getSession();currentUser=data?.session?.user||null;updateAuthUI()}
 function chooseAuthTab(tab){const login=tab==="login";$("#loginForm").style.display=login?"block":"none";$("#registerForm").style.display=login?"none":"block";$("#loginTab").classList.toggle("active",login);$("#registerTab").classList.toggle("active",!login);clearNotice("authNotice")}
 function requestAddGroup(){clearNotice("addNotice");openModal("addModal")}
-$("#openAdd").addEventListener("click",requestAddGroup);$("#openAdd2").addEventListener("click",requestAddGroup);$("#openAuth").addEventListener("click",()=>{chooseAuthTab("login");openModal("authModal")});$("#loginTab").addEventListener("click",()=>chooseAuthTab("login"));$("#registerTab").addEventListener("click",()=>chooseAuthTab("register"));
+$("#openAdd")?.addEventListener("click",requestAddGroup);$("#openAdd2")?.addEventListener("click",requestAddGroup);$("#openAuth")?.addEventListener("click",()=>{chooseAuthTab("login");openModal("authModal")});$("#loginTab")?.addEventListener("click",()=>chooseAuthTab("login"));$("#registerTab")?.addEventListener("click",()=>chooseAuthTab("register"));
 $("#loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){showNotice("authNotice","Supabase ist nicht konfiguriert.");return}const form=e.currentTarget,fd=new FormData(form),btn=form.querySelector("button[type=submit]"),old=btn.textContent;btn.disabled=true;btn.textContent="Anmeldung…";const{data,error}=await db.auth.signInWithPassword({email:String(fd.get("email")).trim(),password:String(fd.get("password"))});btn.disabled=false;btn.textContent=old;if(error){showNotice("authNotice",`Anmeldung fehlgeschlagen: ${error.message}`);return}currentUser=data.user;updateAuthUI();form.reset();closeModal("authModal")});
 $("#registerForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){showNotice("authNotice","Supabase ist nicht konfiguriert.");return}const form=e.currentTarget,fd=new FormData(form),password=String(fd.get("password")),confirm=String(fd.get("password_confirm")),username=String(fd.get("username")).trim();if(password!==confirm){showNotice("authNotice","Die Passwörter stimmen nicht überein.");return}const btn=form.querySelector("button[type=submit]"),old=btn.textContent;btn.disabled=true;btn.textContent="Registrierung…";const{data,error}=await db.auth.signUp({email:String(fd.get("email")).trim(),password,options:{data:{username}}});btn.disabled=false;btn.textContent=old;if(error){showNotice("authNotice",`Registrierung fehlgeschlagen: ${error.message}`);return}currentUser=data.session?.user||null;updateAuthUI();form.reset();if(currentUser){closeModal("authModal");showNotice("addNotice","✅ Konto erstellt. Du kannst jetzt deine Gruppe einreichen.","ok");openModal("addModal")}else{chooseAuthTab("login");showNotice("authNotice","✅ Konto erstellt. Bitte bestätige die E-Mail und melde dich danach an.","ok")}});
-$("#logoutBtn").addEventListener("click",async()=>{await db?.auth.signOut();currentUser=null;updateAuthUI();closeModal("myGroupsModal")});
+$("#logoutBtn")?.addEventListener("click",async()=>{await db?.auth.signOut();currentUser=null;updateAuthUI();closeModal("myGroupsModal")});
 async function loadMyGroups(){const box=$("#myGroupsList");if(!db||!currentUser){box.innerHTML='<div class="my-group-empty">Bitte melde dich erneut an.</div>';return}box.innerHTML='<div class="my-group-empty">Deine Gruppen werden geladen…</div>';try{const result=await Promise.race([db.from("groups").select("id,name,description,category,platform,country,status,image_url,invite_url,tags,created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false}),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Zeitüberschreitung beim Laden des Profils.")),12000))]);const{data,error}=result;if(error)throw error;clearNotice("myGroupsNotice");const rows=data||[];if(!rows.length){box.innerHTML='<div class="my-group-empty">Du hast noch keine Gruppe eingereicht.<br><br><button class="mini-green-btn" type="button" data-new-own-group>＋ Erste Gruppe hinzufügen</button></div>';return}const labels={pending:"In Prüfung",approved:"Veröffentlicht",rejected:"Abgelehnt"};box.innerHTML=rows.map(g=>`<article class="my-group-item">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")} · <span class="status-pill status-${esc(g.status||"pending")}">${esc(labels[g.status]||g.status||"In Prüfung")}</span></div><p class="small" style="margin-top:6px">${esc(g.description||"Keine Beschreibung")}</p></div><div class="my-group-actions"><button class="edit-own-group" data-own-edit="${esc(g.id)}" type="button">✏️ Bearbeiten</button><button class="delete-own-group" data-own-delete="${esc(g.id)}" type="button">🗑️ Löschen</button></div></article>`).join("")}catch(error){box.innerHTML='<div class="my-group-empty">Deine Gruppen konnten nicht geladen werden. Bitte aktualisiere die Seite oder versuche es erneut.</div>';showNotice("myGroupsNotice",error?.message||"Profil konnte nicht geladen werden.")}}
 $("#openMyGroups").addEventListener("click",async()=>{if(!currentUser)return;openModal("myGroupsModal");await loadMyGroups()});$("#refreshMyGroups").addEventListener("click",loadMyGroups);$("#myGroupsList").addEventListener("click",async e=>{if(e.target.closest("[data-new-own-group]")){closeModal("myGroupsModal");requestAddGroup();return}const edit=e.target.closest("[data-own-edit]");if(edit){const id=edit.dataset.ownEdit,{data}=await db.from("groups").select("name,description").eq("id",id).eq("user_id",currentUser.id).single();if(!data)return;const name=prompt("Gruppenname bearbeiten:",data.name||"");if(name===null||!name.trim())return;const description=prompt("Beschreibung bearbeiten:",data.description||"");if(description===null)return;const{error}=await db.from("groups").update({name:name.trim(),description:description.trim(),status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)showNotice("myGroupsNotice",error.message);else{showNotice("myGroupsNotice","✅ Gruppe gespeichert und erneut zur Prüfung gesendet.","ok");await loadMyGroups();await loadGroups()}return}const del=e.target.closest("[data-own-delete]");if(del){if(!confirm("Möchtest du diese Gruppe wirklich löschen?"))return;const{error}=await db.from("groups").delete().eq("id",del.dataset.ownDelete).eq("user_id",currentUser.id);if(error)showNotice("myGroupsNotice",error.message);else{showNotice("myGroupsNotice","Gruppe wurde gelöscht.","ok");await loadMyGroups();await loadGroups()}}});
 /* Consulta directa con cancelación: evita que el perfil quede cargando sin fin. */
@@ -759,7 +759,7 @@ function setupProfilePublishing(){
   const profileTrigger=$("#openMyGroups"),nav=$(".nav");
   const profileMenu=document.createElement("div");
   profileMenu.id="profileNavMenu";profileMenu.className="profile-nav-menu";
-  profileMenu.innerHTML='<button type="button" data-profile-menu="profile">▣ &nbsp; Mein Profil</button><button type="button" data-profile-menu="groups">▰ &nbsp; Meine Gruppen</button><button type="button" data-profile-menu="edit">⚙ &nbsp; Profil bearbeiten</button><button type="button" class="profile-menu-logout" data-profile-menu="logout">⇥ &nbsp; Abmelden</button>';
+  profileMenu.innerHTML='<button type="button" data-profile-menu="groups">▰ &nbsp; Meine Gruppen</button><button type="button" data-profile-menu="edit">⚙ &nbsp; Profil bearbeiten</button><button type="button" class="profile-menu-logout" data-profile-menu="logout">⇥ &nbsp; Abmelden</button>';
   nav?.appendChild(profileMenu);
   const renderNavProfile=()=>{if(!currentUser||!profileTrigger)return;const avatar=currentUser.user_metadata?.avatar_data||"";profileTrigger.classList.add("nav-profile-trigger");profileTrigger.innerHTML=`<span class="nav-avatar-mini">${avatar?`<img src="${esc(avatar)}" alt="">`:"👤"}</span><span class="nav-profile-name">${esc(displayName(currentUser))}</span><span>⌄</span>`};
   renderNavProfile();db?.auth.onAuthStateChange(()=>setTimeout(renderNavProfile,0));
@@ -992,36 +992,7 @@ loadGroups();
 (() => {
   const nav = document.querySelector(".nav");
   if (!nav) return;
-  let menu = document.getElementById("mobileMenuToggle");
-  if (!menu) {
-    menu = document.createElement("button");
-    menu.id = "mobileMenuToggle";
-    menu.className = "mobile-menu-toggle";
-    menu.type = "button";
-    menu.textContent = "☰";
-    menu.setAttribute("aria-label", "Menü öffnen");
-    menu.setAttribute("aria-expanded", "false");
-    nav.appendChild(menu);
-  }
-  let addButton = document.getElementById("mobileAddToggle");
-  if (!addButton) {
-    addButton = document.createElement("button");
-    addButton.id = "mobileAddToggle";
-    addButton.className = "mobile-add-toggle";
-    addButton.type = "button";
-    addButton.textContent = "＋";
-    addButton.setAttribute("aria-label", "Gruppe hinzufügen");
-    nav.appendChild(addButton);
-  }
-  addButton.addEventListener("click", () => document.getElementById("openAdd")?.click());
-  const themeButton = document.getElementById("mobileTheme");
-  themeButton?.addEventListener("click", () => {
-    const dark = document.body.classList.toggle("dark");
-    localStorage.setItem("darkMode", dark ? "1" : "");
-    applyPageLanguage(localStorage.getItem("grouptreff-language") || "de");
-  });
-  const languageButton = document.getElementById("mobileLanguage");
-  const languages = [["de", "🇩🇪 Deutsch"], ["us", "🇺🇸 English"], ["es", "🇪🇸 Español"]];
+  const languageButton = null;
   const pageTranslations = {
     de:{title:"GroupTreff | WhatsApp Gruppen & Telegram Gruppen finden",search:"Gruppen suchen...",login:"👤 Anmelden / Registrieren",language:"🌐 Sprache ändern",night:"🌙 Nachtmodus",day:"☀️ Tagesmodus",heading:"Aktuelle deutsche WhatsApp Gruppen",platform:"Alle Plattformen",rating:"⭐ Beste Bewertung",votes:"🔥 Meiste Stimmen",newest:"🆕 Neueste zuerst",addTitle:"Hast du eine eigene Gruppe?",addText:"Veröffentliche deine WhatsApp-Gruppe im Verzeichnis und sammle Stimmen.",add:"＋ Meine Gruppe hinzufügen",authTitle:"👤 Dein GroupTreff-Konto",authText:"Ein Konto ist optional. Melde dich an, wenn du deine eingereichten Gruppen später verwalten möchtest.",password:"Dein Passwort"},
     us:{title:"GroupTreff | Find WhatsApp & Telegram Groups",search:"Search groups...",login:"👤 Log in / Sign up",language:"🌐 Change language",night:"🌙 Night mode",day:"☀️ Day mode",heading:"Current German WhatsApp Groups",platform:"All platforms",rating:"⭐ Best rated",votes:"🔥 Most votes",newest:"🆕 Newest first",addTitle:"Do you have your own group?",addText:"Publish your WhatsApp group in the directory and collect votes.",add:"＋ Add my group",authTitle:"👤 Your GroupTreff account",authText:"An account is optional. Log in to manage groups you submitted later.",password:"Your password"},
@@ -1033,53 +1004,21 @@ loadGroups();
     document.title = lang.title;
     const set = (selector, value) => { const element = document.querySelector(selector); if(element) element.textContent = value; };
     const placeholder = (selector, value) => { const element = document.querySelector(selector); if(element) element.placeholder = value; };
-    set("#openAuth", lang.login); set("#mobileLanguage", lang.language); set(".groups-heading h2", lang.heading);
+    set("#openAuth", lang.login); set(".groups-heading h2", lang.heading);
     set(".cta h2", lang.addTitle); set(".cta p", lang.addText); set("#openAdd2", lang.add);
     set("#authModal h2", lang.authTitle); set("#authModal .modal-sub", lang.authText);
     placeholder("#navSearchInput", lang.search); placeholder("#loginForm input[type=password]", lang.password);
     const platform = document.querySelector("#platformFilter option[value='Alle']"); if(platform) platform.textContent=lang.platform;
     const sort = document.querySelector("#sortFilter"); if(sort){sort.options[0].textContent=lang.rating;sort.options[1].textContent=lang.votes;sort.options[2].textContent=lang.newest;}
-    languageButton.textContent = key === "de" ? lang.language : "🌐 " + languages.find(([code]) => code === key)?.[1].replace(/^..\s/, "");
-    themeButton.textContent = document.body.classList.contains("dark") ? lang.day : lang.night;
   };
   applyPageLanguage(localStorage.getItem("grouptreff-language") || "de");
   window.addEventListener("grouptreff-language-change", event => applyPageLanguage(event.detail));
-  languageButton?.addEventListener("click", () => {
-    const current = localStorage.getItem("grouptreff-language") || "de";
-    const index = Math.max(0, languages.findIndex(([key]) => key === current));
-    const next = languages[(index + 1) % languages.length];
-    localStorage.setItem("grouptreff-language", next[0]);
-    applyPageLanguage(next[0]);
-  });
-  menu.addEventListener("click", () => {
-    const open = nav.classList.toggle("mobile-menu-open");
-    menu.setAttribute("aria-expanded", String(open));
-    menu.setAttribute("aria-label", open ? "Menü schließen" : "Menü öffnen");
-  });
-  document.addEventListener("click", event => {
-    if (!nav.classList.contains("mobile-menu-open") || nav.contains(event.target)) return;
-    nav.classList.remove("mobile-menu-open");
-    menu.setAttribute("aria-expanded", "false");
-    menu.setAttribute("aria-label", "Menü öffnen");
-  });
 })();
 </script>
 <script>
 (() => {
-  const profilePage = new URLSearchParams(location.search).has("user") || new URLSearchParams(location.search).get("profile")==="1";
-  const trigger = document.getElementById("mobileMenuToggle");
-  if (!profilePage || !trigger) return;
-  const panel = document.createElement("div");
-  panel.className = "profile-drawer-backdrop";
-  panel.innerHTML = `<aside class="profile-drawer" aria-label="Menú de perfil"><button class="profile-drawer-close" type="button" aria-label="Cerrar">×</button><p class="profile-drawer-title">Menú</p><button class="profile-drawer-action" data-drawer="add"><span class="profile-drawer-icon">＋</span>Agregar grupo</button><button class="profile-drawer-action" data-drawer="auth"><span class="profile-drawer-icon">♙</span>Registro</button><div class="profile-drawer-section"><p class="profile-drawer-title">Idioma / Language / Idioma</p><div class="profile-drawer-languages"><button class="profile-drawer-language active" type="button"><b>DE</b><span>Alemán</span><b>✓</b></button><button class="profile-drawer-language" type="button"><b>US</b><span>Inglés (EE. UU.)</span><b></b></button><button class="profile-drawer-language" type="button"><b>GB</b><span>Inglés (Reino Unido)</span><b></b></button><button class="profile-drawer-language" type="button"><b>ES</b><span>Español</span><b></b></button></div></div><div class="profile-drawer-app"><strong>📲 Instala la aplicación GroupTreff</strong><p>Accede más rápido desde la pantalla de inicio.</p><button class="profile-drawer-install" type="button">⚡ Instalar ahora</button></div></aside>`;
-  document.body.appendChild(panel);
-  const close = () => panel.classList.remove("open");
-  trigger.addEventListener("click", event => { event.stopImmediatePropagation(); document.querySelector(".nav")?.classList.remove("mobile-menu-open"); panel.classList.toggle("open"); }, true);
-  panel.addEventListener("click", event => { if (event.target === panel || event.target.closest(".profile-drawer-close")) close(); });
-  panel.querySelector('[data-drawer="add"]')?.addEventListener("click",()=>{close();document.getElementById("openAdd")?.click()});
-  panel.querySelector('[data-drawer="auth"]')?.addEventListener("click",()=>{close();document.getElementById("openAuth")?.click()});
-  panel.querySelector(".profile-drawer-install")?.addEventListener("click",()=>{close();document.getElementById("installAppFooter")?.click()});
-  panel.querySelectorAll(".profile-drawer-language").forEach(button=>button.addEventListener("click",()=>{panel.querySelectorAll(".profile-drawer-language").forEach(item=>item.classList.remove("active"));button.classList.add("active")}));
+  document.querySelector(".mobile-menu-toggle")?.remove();
+  document.querySelector(".mobile-add-toggle")?.remove();
 })();
 </script>
 </body>
