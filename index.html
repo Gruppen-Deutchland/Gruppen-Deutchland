@@ -434,8 +434,8 @@ font-weight:800;
   header .nav-search button{color:#15803d!important}
 }
 /* Fondos decorativos para modo día y modo noche */
-body{background-color:#f7faf8;background-image:url('grouptreff-background-day.jpg');background-repeat:no-repeat;background-size:cover;background-position:center top;background-attachment:fixed}
-body.dark{background-color:#0f172a;background-image:url('grouptreff-background-night.jpg')}
+body{background-color:#f7faf8;background-image:none;background-repeat:no-repeat;background-size:cover;background-position:center top;background-attachment:fixed}
+body.dark{background-color:#0f172a;background-image:none}
 /* Las tarjetas conservan el mismo diseño en modo noche. */
 body.dark .group-card{background:linear-gradient(145deg,#ecfff1,#d8f8e3)!important;border-color:#b9ebc9!important}
 body.dark .group-card .group-title{color:#101820!important}
@@ -514,7 +514,7 @@ header .nav #openAuth:hover{background:#0ea5e9!important;border-color:#0ea5e9!im
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL="https://cymdnshkisftyulbfncf.supabase.co";const SUPABASE_ANON_KEY="sb_publishable_Q4lVE-CTOYafQL3D2J44zw_sAOBJ7H9";const configured=!SUPABASE_URL.includes("YOUR-PROJECT")&&!SUPABASE_ANON_KEY.includes("YOUR_PUBLIC_ANON_KEY");const db=configured?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
-const state={groups:[],category:"Alle",country:"ALL",page:1,share:null,detail:null,voteGroup:null,rating:0};const $=s=>document.querySelector(s);const esc=s=>String(s??"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#039;"}[m]));
+const state={groups:[],category:"Alle",country:"ALL",page:1,share:null,detail:null,voteGroup:null,rating:0};const $=s=>document.querySelector(s);const decodeEntities=value=>{let text=String(value??"");for(let i=0;i<4;i++){const node=document.createElement("textarea");node.innerHTML=text;const next=node.value;if(next===text)break;text=next}return text};const esc=s=>decodeEntities(s).replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#039;"}[m]));
 const homeLogo=$(".logo");if(homeLogo){homeLogo.removeAttribute("style");homeLogo.innerHTML='<img class="logo-image" src="grouptreff-logo.png" alt="GroupTreff">'}
 const languageChoices={de:{code:"DE",label:"Deutsch",lang:"de"},us:{code:"US",label:"English (US)",lang:"en-US"},gb:{code:"GB",label:"English (UK)",lang:"en-GB"},es:{code:"ES",label:"Español",lang:"es"}};
 const savedLanguage=localStorage.getItem("grouptreff-language")||"de";
