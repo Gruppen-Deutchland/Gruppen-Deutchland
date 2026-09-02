@@ -851,11 +851,12 @@ function setupProfilePublishing(){
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
       const row={name:meta.name.slice(0,80),platform:meta.platform,country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:meta.image_url||"",description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
-      const {data,error}=await db.from("groups").insert(row).select("id,name,country").single();
+      /* Las filas pendientes no se pueden leer públicamente. Por eso no usamos
+         .select() después de insertar: esa lectura activaba la política RLS. */
+      const {error}=await db.from("groups").insert(row);
       if(error)throw error;
-      if(currentUser){const {error:socialError}=await db.from("groups").update({owner_socials:getSocialLinks(currentUser)}).eq("id",data.id).eq("user_id",currentUser.id);if(socialError)throw socialError}
-      rememberSubmittedGroup({id:data.id,invite_url:inviteUrl,name:data.name,country:data.country});
-      e.target.reset();closeModal("addModal");showVotePromotion(data);
+      rememberSubmittedGroup({invite_url:inviteUrl,name:row.name,country:row.country});
+      e.target.reset();closeModal("addModal");showNotice("addNotice","✅ Gruppe wurde zur Prüfung eingereicht.","ok");
     }catch(error){notice.textContent=`Fehler: ${error.message||"Bitte prüfe den Gruppenlink."}`;notice.className="notice show err"}
     finally{button.disabled=false;button.textContent=old}
   },true);
