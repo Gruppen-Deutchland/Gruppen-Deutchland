@@ -8,29 +8,29 @@
 <meta http-equiv="Expires" content="0">
 <meta name="theme-color" content="#16a34a">
 <link rel="manifest" href="manifest.webmanifest?v=8">
-<link rel="icon" type="image/png" href="favicon-rounded.png?v=6">
-<link rel="shortcut icon" type="image/png" href="favicon-rounded.png?v=6">
-<link rel="apple-touch-icon" href="favicon-rounded.png?v=6">
+<link rel="icon" type="image/png" sizes="48x48" href="grouptreff-favicon.png">
+<link rel="shortcut icon" type="image/png" href="grouptreff-favicon.png">
+<link rel="apple-touch-icon" href="grouptreff-favicon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="GroupTreff">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="GroupTreff">
-<meta property="og:title" content="GroupTreff | WhatsApp Gruppen Verzeichnis">
-<meta property="og:description" content="Entdecke beliebte WhatsApp- und Telegram-Gruppen in Deutschland.">
+<meta property="og:title" content="GroupTreff">
+<meta property="og:description" content="Finde öffentliche WhatsApp Gruppen und Telegram Gruppen aus Deutschland: Gaming, Musik, Dating, Freundschaft, Städte und mehr. Kostenlos und ohne Anmeldung.">
 <meta property="og:image" content="https://grouptreff.de/share-preview.png?v=8">
 <meta property="og:image:secure_url" content="https://grouptreff.de/share-preview.png?v=8">
 <meta property="og:image:width" content="1730">
 <meta property="og:image:height" content="909">
-<meta property="og:image:alt" content="GroupTreff – grupos de WhatsApp y Telegram">
+<meta property="og:image:alt" content="GroupTreff – WhatsApp Gruppen und Telegram Gruppen finden">
 <meta property="og:url" content="https://grouptreff.de/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://grouptreff.de/share-preview.png?v=8">
 
-<title>GroupTreff | WhatsApp Gruppen & Telegram Gruppen finden</title>
-<meta name="description" content="GroupTreff: WhatsApp-Gruppen und Telegram-Gruppen finden – deutsche Communities, Chatgruppen, Gaming, Reisen, Freizeit und 18+ Gruppen aus Deutschland und weltweit.">
-<meta name="keywords" content="WhatsApp Gruppen, WhatsApp-Gruppen Deutschland, Telegram Gruppen, Telegram-Gruppen Deutschland, deutsche Gruppen, deutsche Communities, Chatgruppen, Gruppenverzeichnis, WhatsApp Community, Telegram Community, Gruppen finden, Gaming Gruppen, Reisegruppen, Freizeit Gruppen, 18+ Gruppen">
+<title>GroupTreff</title>
+<meta name="description" content="Finde öffentliche WhatsApp Gruppen und Telegram Gruppen aus Deutschland: Gaming, Musik, Dating, Freundschaft, Städte und mehr. Kostenlos und ohne Anmeldung.">
+<meta name="keywords" content="WhatsApp Gruppen finden, Telegram Gruppen finden, WhatsApp Gruppen Deutschland, Telegram Gruppen Deutschland, deutsche Chatgruppen, Gruppenverzeichnis, Freundschaft Gruppen, Singles Gruppen, Gaming Gruppen, Freizeit Gruppen, Reisegruppen, Communities">
 <meta name="robots" content="index, follow">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"GroupTreff","url":"https://grouptreff.de/","description":"GroupTreff ist ein deutsches Gruppenverzeichnis zum Finden von WhatsApp-Gruppen, Telegram-Gruppen, Communities und Chatgruppen.","inLanguage":"de","keywords":"WhatsApp Gruppen, Telegram Gruppen, deutsche Communities, Chatgruppen, Gruppenverzeichnis"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"GroupTreff","url":"https://grouptreff.de/","description":"Finde öffentliche WhatsApp Gruppen und Telegram Gruppen aus Deutschland: Gaming, Musik, Dating, Freundschaft, Städte und mehr. Kostenlos und ohne Anmeldung.","inLanguage":"de","keywords":"WhatsApp Gruppen finden, Telegram Gruppen finden, deutsche Chatgruppen, Gruppenverzeichnis"}</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#f5f7fa;--card:#fff;--card2:#f8fafc;--text:#172033;--muted:#6b7280;--primary:#16a34a;--primary-dark:#12823c;--border:#e5e7eb;--shadow:0 10px 30px rgba(15,23,42,.07);--header:rgba(255,255,255,.93);--gold:#f59e0b;--danger:#dc2626}
@@ -683,9 +683,9 @@ function openGroupDetail(g){
   const img=$("#detailImage"),fallback=$("#detailImageFallback");
   if(g.image_url){img.src=g.image_url;img.style.display="block";fallback.style.display="none"}else{img.removeAttribute("src");img.style.display="none";fallback.style.display="grid"}
   img.onerror=()=>{img.style.display="none";fallback.style.display="grid"};
-  $("#detailTitle").textContent=g.name||"WhatsApp Gruppe";
+  $("#detailTitle").textContent=decodeEntities(g.name||"WhatsApp Gruppe");
   $("#detailSubtitle").innerHTML=`${countryFlagSvg(g.country||"DE",true)}<span>Dieser Gruppe beitreten</span>${countryFlagSvg(g.country||"DE",true)}`;
-  $("#detailDescription").textContent=g.description||"Entdecke diese Gruppe und tritt dem Chat bei.";
+  $("#detailDescription").textContent=decodeEntities(g.description||"Entdecke diese Gruppe und tritt dem Chat bei.");
   const tags=Array.isArray(g.tags)?g.tags:[];
   $("#detailTags").innerHTML=tags.slice(0,8).map(t=>`<span>#${esc(String(t).replace(/^#/,""))}</span>`).join("");
   $("#detailJoin").href=g.invite_url||"#";
@@ -917,7 +917,7 @@ function showVotePromotion(group){const url=votePageUrl(group);$("#votePromoLink
 $("#copyVotePromo")?.addEventListener("click",async()=>{const input=$("#votePromoLink");try{await navigator.clipboard.writeText(input.value);$("#copyVotePromo").textContent="✅ Kopiert";setTimeout(()=>$("#copyVotePromo").textContent="Kopieren",1200)}catch{input.select();document.execCommand("copy")}});
 $("#closeVotePromo")?.addEventListener("click",()=>closeModal("votePromoModal"));
 document.addEventListener("submit",e=>{if(e.target.id!=="addForm"||!db)return;const fd=new FormData(e.target),inviteUrl=String(fd.get("invite_url")||"").trim(),name=String(fd.get("name")||"Gruppe").trim();if(!inviteUrl)return;window.setTimeout(async()=>{const{data}=await db.from("groups").select("id,name").eq("invite_url",inviteUrl).order("created_at",{ascending:false}).limit(1);const saved=data?.[0];if(saved)showVotePromotion(saved);else showVotePromotion({id:"neu",name})},2100)},true);
-function addCardDescriptions(){document.querySelectorAll("#groupsGrid .group-card").forEach(card=>{if(card.querySelector(".card-description"))return;const id=card.querySelector("[data-vote]")?.dataset.vote,g=state.groups.find(x=>String(x.id)===String(id)),category=card.querySelector(".group-category");if(!g||!category)return;const description=document.createElement("p");description.className="card-description";description.textContent=g.description||"Entdecke diese Gruppe und tritt dem Chat bei.";category.insertAdjacentElement("afterend",description)})}
+function addCardDescriptions(){document.querySelectorAll("#groupsGrid .group-card").forEach(card=>{if(card.querySelector(".card-description"))return;const id=card.querySelector("[data-vote]")?.dataset.vote,g=state.groups.find(x=>String(x.id)===String(id)),category=card.querySelector(".group-category");if(!g||!category)return;const description=document.createElement("p");description.className="card-description";description.textContent=decodeEntities(g.description||"Entdecke diese Gruppe und tritt dem Chat bei.");category.insertAdjacentElement("afterend",description)})}
 function addPublicProfileLinks(){document.querySelectorAll("#groupsGrid .group-card .owner-badge").forEach(owner=>{if(owner.matches("button"))return;const card=owner.closest(".group-card"),id=card?.querySelector("[data-vote]")?.dataset.vote,g=state.groups.find(x=>String(x.id)===String(id));if(!g?.user_id)return;const button=document.createElement("button");button.type="button";button.className="owner-badge owner-profile";button.dataset.publicProfile=g.user_id;button.title=`Profil von ${g.owner_name||"Mitglied"} ansehen`;button.innerHTML=owner.innerHTML;owner.replaceWith(button)})}
 document.addEventListener("click",e=>{const button=e.target.closest("[data-public-profile]");if(!button)return;e.preventDefault();e.stopPropagation();window.open(`${GROUPTREFF_URL}?user=${encodeURIComponent(button.dataset.publicProfile)}`,"_blank")});
 document.addEventListener("click",e=>{const button=e.target.closest("[data-public-group]");if(!button)return;e.preventDefault();const groupId=button.dataset.publicGroup;if(groupId)window.location.assign(groupPageUrl(groupId))});
