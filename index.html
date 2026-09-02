@@ -850,13 +850,14 @@ function setupProfilePublishing(){
       const meta=await groupPublishMetadata(inviteUrl);
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
-      const row={name:meta.name.slice(0,80),platform:meta.platform,country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:meta.image_url||"",description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
+      const groupId=crypto.randomUUID();
+      const row={id:groupId,name:(meta.name||"Gruppe").slice(0,80),platform:meta.platform||"WhatsApp",country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:meta.image_url||"",description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
       /* Las filas pendientes no se pueden leer públicamente. Por eso no usamos
          .select() después de insertar: esa lectura activaba la política RLS. */
       const {error}=await db.from("groups").insert(row);
       if(error)throw error;
-      rememberSubmittedGroup({invite_url:inviteUrl,name:row.name,country:row.country});
-      e.target.reset();closeModal("addModal");showNotice("addNotice","✅ Gruppe wurde zur Prüfung eingereicht.","ok");
+      rememberSubmittedGroup({id:groupId,invite_url:inviteUrl,name:row.name,country:row.country});
+      e.target.reset();showVotePromotion({id:groupId,name:row.name});
     }catch(error){notice.textContent=`Fehler: ${error.message||"Bitte prüfe den Gruppenlink."}`;notice.className="notice show err"}
     finally{button.disabled=false;button.textContent=old}
   },true);
@@ -914,7 +915,7 @@ function setupProfilePublishing(){
   }
 }
 setupProfilePublishing();
-function showVotePromotion(group){const url=votePageUrl(group);$("#votePromoLink").value=url;openModal("votePromoModal")}
+function showVotePromotion(group){const url=votePageUrl(group);$("#votePromoLink").value=url;const box=$("#votePromoModal .modal-sub");if(box)box.textContent="✅ Deine Gruppe befindet sich jetzt in der Prüfung. Ein Moderator schaltet sie nach der Kontrolle frei.";openModal("votePromoModal")}
 $("#copyVotePromo")?.addEventListener("click",async()=>{const input=$("#votePromoLink");try{await navigator.clipboard.writeText(input.value);$("#copyVotePromo").textContent="✅ Kopiert";setTimeout(()=>$("#copyVotePromo").textContent="Kopieren",1200)}catch{input.select();document.execCommand("copy")}});
 $("#closeVotePromo")?.addEventListener("click",()=>closeModal("votePromoModal"));
 document.addEventListener("submit",e=>{if(e.target.id!=="addForm"||!db)return;const fd=new FormData(e.target),inviteUrl=String(fd.get("invite_url")||"").trim(),name=String(fd.get("name")||"Gruppe").trim();if(!inviteUrl)return;window.setTimeout(async()=>{const{data}=await db.from("groups").select("id,name").eq("invite_url",inviteUrl).order("created_at",{ascending:false}).limit(1);const saved=data?.[0];if(saved)showVotePromotion(saved);else showVotePromotion({id:"neu",name})},2100)},true);
