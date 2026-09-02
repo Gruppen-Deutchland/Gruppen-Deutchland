@@ -498,6 +498,25 @@ header .nav #openAuth:hover{background:#0ea5e9!important;border-color:#0ea5e9!im
   .nav-profile-name{display:none}
   .nav #openAuth,.nav #openMyGroups{max-width:46px}
 }
+/* Cabecera exclusiva del perfil y acciones de perfiles públicos */
+.profile-page>header{background:linear-gradient(105deg,#128c7e,#25d366)!important;border:0!important;box-shadow:0 2px 12px rgba(9,91,64,.28)!important}
+.profile-page>header .logo{display:inline-flex!important;align-items:center!important;gap:8px!important;min-width:max-content!important}
+.profile-page>header .logo::before{content:"👥";display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.18);color:#fff;font-size:17px;line-height:1}
+.profile-page>header .logo-image{filter:brightness(0) invert(1)!important}
+.profile-page .my-group-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}
+.profile-page .public-group-card-btn,.profile-page .public-join-group{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:8px 10px;border-radius:9px;text-decoration:none;font-size:12px;font-weight:900}
+.profile-page .public-group-card-btn{border:1px solid #a9e1bc;background:#fff!important;color:#137436!important}
+.profile-page .public-join-group{border:1px solid #16a34a;background:#16a34a;color:#fff}
+.profile-page .public-join-group:hover{background:#128c7e;border-color:#128c7e}
+@media(max-width:620px){
+  .profile-page>header{min-height:108px!important}
+  .profile-page>header .nav{height:108px!important;min-height:108px!important}
+  .profile-page>header .logo{left:10px!important;top:10px!important}
+  .profile-page>header .logo::before{width:29px;height:29px;font-size:16px}
+  .profile-page>header .logo-image{width:92px!important}
+  .profile-page .my-group-actions{grid-template-columns:1fr!important}
+  .profile-page .public-group-card-btn,.profile-page .public-join-group{width:100%;min-height:34px;padding:7px;font-size:11px}
+}
 </style>
 </head>
 <body>
@@ -835,6 +854,7 @@ function setupProfilePublishing(){
   if(profileMode)window.addEventListener("load",()=>{document.body.classList.add("profile-page");document.title="Mein Profil | GroupTreff";renderAvatar();openModal("myGroupsModal");buildGroupTreffProfile(null,{socials:getSocialLinks(currentUser)});loadMyGroups()});
   if(publicProfileId)window.addEventListener("load",async()=>{document.body.classList.add("profile-page");document.title="Öffentliches Profil | GroupTreff";openModal("myGroupsModal");$("#profileAvatarInput")?.closest(".profile-avatar-wrap")?.querySelector(".profile-avatar-edit")?.remove();$("#refreshMyGroups").style.display="none";$("#myGroupsModal .my-groups-head .modal-sub").textContent="Öffentlich veröffentlichte Gruppen";const box=$("#myGroupsList");box.innerHTML='<div class="my-group-empty">Profil wird geladen…</div>';try{const profileUrl=`${SUPABASE_URL}/rest/v1/groups?select=id,name,description,category,country,image_url,invite_url,owner_name,owner_avatar,status&user_id=eq.${encodeURIComponent(publicProfileId)}&status=eq.approved&order=created_at.desc`;const response=await fetch(profileUrl,{headers:{apikey:SUPABASE_ANON_KEY}}),groups=await response.json();if(!response.ok)throw new Error("Profil konnte nicht geladen werden.");const rows=Array.isArray(groups)?groups:[],owner=rows[0];$("#myGroupsModal h2").textContent=owner?.owner_name||"Öffentliches Profil";if(emailBox)emailBox.textContent="";if(avatarBox)avatarBox.innerHTML=owner?.owner_avatar?`<img src="${esc(owner.owner_avatar)}" alt="Profilfoto">`:`👤`;if(!rows.length){box.innerHTML='<div class="my-group-empty">Diese Person hat noch keine veröffentlichten Gruppen.</div>';return}box.innerHTML=rows.map(g=>`<article class="my-group-item">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")}</div><p class="small" style="margin-top:6px">${esc(g.description||"WhatsApp-Gruppe entdecken.")}</p></div><div class="my-group-actions"><button class="mini-green-btn public-group-card-btn" type="button" data-public-group="${esc(g.id)}">Gruppe ansehen</button></div></article>`).join("")}catch(error){box.innerHTML='<div class="my-group-empty">Dieses Profil konnte nicht geladen werden.</div>'}});
   if(publicProfileId)window.addEventListener("load",()=>{const list=$("#myGroupsList");if(!list)return;const decorate=()=>{if(!list.querySelector(".my-group-item"))return;const img=$("#profileAvatar img")?.src||"";buildGroupTreffProfile({owner_name:$("#myGroupsModal h2")?.textContent||"GroupTreff Mitglied",owner_avatar:img},{publicView:true});observer.disconnect()};const observer=new MutationObserver(decorate);observer.observe(list,{childList:true,subtree:true});decorate()});
+  if(publicProfileId)window.addEventListener("load",()=>{const list=$("#myGroupsList");if(!list)return;const addJoinButtons=()=>{list.querySelectorAll(".my-group-item").forEach(item=>{const view=item.querySelector(".public-group-card-btn"),actions=item.querySelector(".my-group-actions");if(!view||!actions||actions.querySelector(".public-join-group"))return;const groupId=view.dataset.publicGroup;const group=state.groups.find(entry=>String(entry.id)===String(groupId));if(!group?.invite_url)return;const join=document.createElement("a");join.className="public-join-group";join.href=group.invite_url;join.target="_blank";join.rel="noopener noreferrer";join.textContent="Unirse al grupo";actions.appendChild(join);view.textContent="Ver tarjeta"})};const observer=new MutationObserver(addJoinButtons);observer.observe(list,{childList:true,subtree:true});addJoinButtons()});
   if(publicProfileId){
     socialSection.remove();
     window.addEventListener("load",async()=>{try{const socialUrl=`${SUPABASE_URL}/rest/v1/groups?select=owner_socials&user_id=eq.${encodeURIComponent(publicProfileId)}&status=eq.approved&limit=1`;const response=await fetch(socialUrl,{headers:{apikey:SUPABASE_ANON_KEY}});const rows=await response.json();const links=rows?.[0]?.owner_socials||{};const valid=Object.entries(links).filter(([,value])=>safeSocialUrl(value));if(!valid.length)return;const publicLinks=document.createElement("div");publicLinks.className="public-socials";valid.forEach(([key,value])=>{const link=document.createElement("a");link.href=safeSocialUrl(value);link.target="_blank";link.rel="noopener noreferrer";link.textContent=`↗ ${SOCIAL_NETWORKS[key]||key}`;publicLinks.appendChild(link)});$("#myGroupsModal .my-groups-head")?.insertAdjacentElement("beforebegin",publicLinks)}catch{}});
