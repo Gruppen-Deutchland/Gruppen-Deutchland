@@ -517,6 +517,14 @@ header .nav #openAuth:hover{background:#0ea5e9!important;border-color:#0ea5e9!im
   .profile-page .my-group-actions{grid-template-columns:1fr!important}
   .profile-page .public-group-card-btn,.profile-page .public-join-group{width:100%;min-height:34px;padding:7px;font-size:11px}
 }
+/* Las publicaciones del perfil reutilizan las tarjetas de la página principal */
+.profile-page .my-groups-list.profile-cards-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:0;max-height:none;overflow:visible}
+.profile-page .profile-group-card{cursor:pointer}
+.profile-page .profile-group-card .profile-update-link{justify-self:start;border:0;border-radius:7px;background:#128c7e;color:#fff;padding:5px 8px;font-size:10px;font-weight:900;white-space:nowrap}
+.profile-page .profile-group-card .group-date{display:none}
+.profile-page .profile-group-card .group-card-footer{grid-template-columns:1fr 28px auto}
+@media(max-width:760px){.profile-page .my-groups-list.profile-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
+@media(max-width:470px){.profile-page .my-groups-list.profile-cards-grid{gap:10px}}
 </style>
 </head>
 <body>
@@ -1108,6 +1116,62 @@ loadGroups();
   document.querySelector(".mobile-menu-toggle")?.remove();
   document.querySelector(".mobile-add-toggle")?.remove();
 })();
+</script>
+<script>
+/* Tarjetas de grupos dentro de perfiles: mismas acciones que en el directorio */
+(()=>{
+  const profileGroups=new Map();
+  const getProfileGroup=id=>profileGroups.get(String(id))||state.groups.find(group=>String(group.id)===String(id));
+  const profileCard=(g,owner=false)=>{
+    const tags=Array.isArray(g.tags)?g.tags:[],category=normalizeCategory(g.category||"Community"),adult=category==="Adult";
+    const votes=+g.votes_count||0;
+    let date="";try{date=g.created_at?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(g.created_at)):""}catch{}
+    return `<article class="group-card profile-group-card" data-profile-card="${esc(g.id)}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Gruppe bewerten">★${votes}</button><span class="online-dot" aria-hidden="true"></span></div><div class="group-content"><div class="group-title">${esc(g.name||"Gruppe")}</div><div class="group-category">${esc(category)}</div><div class="group-tags">${tags.slice(0,4).map(tag=>`<span class="small">#${esc(String(tag).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer">${owner?`<button class="profile-update-link" data-profile-update="${esc(g.id)}" type="button">🔗 Link</button>`:`<time class="group-date">${esc(date)}</time>`}<button class="group-share" type="button" data-share="${esc(g.id)}" title="Teilen">↗</button><span class="age-badge ${adult?"":"neutral"}">${adult?"Ab 18+":"Alle"}</span></div></div></article>`;
+  };
+  const convertProfileCards=()=>{
+    if(!document.body.classList.contains("profile-page"))return;
+    const list=$("#myGroupsList");if(!list||list.dataset.profileCards==="ready")return;
+    const oldCards=[...list.querySelectorAll(".my-group-item")];if(!oldCards.length)return;
+    const publicView=!!publicProfileId;
+    const groups=oldCards.map(item=>{
+      const id=(item.querySelector("[data-public-group]")?.dataset.publicGroup||item.querySelector("[data-own-edit]")?.dataset.ownEdit||"");
+      return getProfileGroup(id);
+    });
+    if(groups.some(group=>!group))return;
+    groups.forEach(group=>profileGroups.set(String(group.id),group));
+    list.classList.add("profile-cards-grid");
+    list.innerHTML=groups.map(group=>profileCard(group,!publicView)).join("");
+    list.dataset.profileCards="ready";
+  };
+  window.addEventListener("load",()=>{
+    const list=$("#myGroupsList");if(!list)return;
+    new MutationObserver(convertProfileCards).observe(list,{childList:true,subtree:true});
+    setTimeout(convertProfileCards,300);
+  });
+  document.addEventListener("click",async event=>{
+    const card=event.target.closest(".profile-group-card");
+    if(card&&!event.target.closest("[data-vote],[data-share],[data-profile-update]")){
+      const group=getProfileGroup(card.dataset.profileCard);
+      if(group){event.preventDefault();event.stopImmediatePropagation();openGroupDetail(group)}
+    }
+    const update=event.target.closest("[data-profile-update]");
+    if(!update||!db||!currentUser)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    const group=getProfileGroup(update.dataset.profileUpdate);
+    const next=prompt("Neuen WhatsApp- oder Telegram-Link einfügen:",group?.invite_url||"");
+    if(!next?.trim())return;
+    try{
+      const meta=await groupPublishMetadata(next.trim());
+      const {error}=await db.from("groups").update({invite_url:next.trim(),name:meta.name.slice(0,80),image_url:meta.image_url||"",description:meta.description||"",platform:meta.platform,status:"pending"}).eq("id",update.dataset.profileUpdate).eq("user_id",currentUser.id);
+      if(error)throw error;
+      showNotice("myGroupsNotice","✅ Link aktualisiert. La grupo será revisado nuevamente.","ok");
+      await loadMyGroups();await loadGroups();
+    }catch(error){showNotice("myGroupsNotice",error.message||"No se pudo actualizar el enlace.")}
+  },true);
+})();
+</script>
+<script>
+(()=>{const originalLoadMyGroups=loadMyGroups;loadMyGroups=async(...args)=>{const list=document.querySelector("#myGroupsList");if(list)delete list.dataset.profileCards;return originalLoadMyGroups(...args)}})();
 </script>
 </body>
 </html>
