@@ -670,8 +670,10 @@ function legacyGroupId(id){return `GT-${String(id||"").replace(/[^a-zA-Z0-9]/g,"
 function shortGroupId(id){let hash=0;for(const char of String(id||"")){hash=((hash<<5)-hash)+char.charCodeAt(0);hash|=0}return String(10000+(Math.abs(hash)%90000))}
 function groupSlug(name){return String(name||"gruppe").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/ß/g,"ss").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,55)||"gruppe"}
 function groupPathKey(group){return `${groupSlug(group?.name)}-${shortGroupId(group?.id)}`}
-function groupPageUrl(group){return `${GROUPTREFF_URL}group.php?g=${encodeURIComponent(typeof group==="object"?shortGroupId(group.id):shortGroupId(group))}`}
-function votePageUrl(group){return `${GROUPTREFF_URL}group.php?g=${encodeURIComponent(shortGroupId(typeof group==="object"?group.id:group))}&vote=1`}
+/* Las fichas se abren dentro del index: así se usan los iconos SVG y no se
+   muestran entidades HTML (por ejemplo &#x1f1e9;) como texto. */
+function groupPageUrl(group){return `${GROUPTREFF_URL}?g=${encodeURIComponent(typeof group==="object"?shortGroupId(group.id):shortGroupId(group))}`}
+function votePageUrl(group){return `${GROUPTREFF_URL}?g=${encodeURIComponent(shortGroupId(typeof group==="object"?group.id:group))}&vote=1`}
 function ensureVoteQr(){let box=$("#detailVoteQr");if(box)return box;box=document.createElement("div");box.id="detailVoteQr";box.className="detail-vote-qr";box.innerHTML='<strong>📲 QR-Code der Gruppe</strong><img id="detailVoteQrImage" alt="QR-Code für die Gruppenseite"><span>Scanne den Code, um die Gruppenkarte zu öffnen.</span>';$("#detailPageLink").closest(".detail-link-row").insertAdjacentElement("afterend",box);return box}
 function placeVoteLink(){const actions=$(".detail-actions"),label=document.querySelector('label[for="detailPageLink"]'),row=$("#detailPageLink")?.closest(".detail-link-row");if(actions&&label&&row){actions.insertAdjacentElement("afterend",label);label.insertAdjacentElement("afterend",row);row.insertAdjacentElement("afterend",ensureVoteQr())}}
 function setAdultBadge(adult){let badge=$("#detailAdultBadge");if(!badge){badge=document.createElement("div");badge.id="detailAdultBadge";badge.className="detail-adult-badge";badge.textContent="🔞 Ab 18+";$("#detailJoin").insertAdjacentElement("afterend",badge)}badge.classList.toggle("show",adult)}
@@ -942,18 +944,8 @@ function openSharedGroupFromUrl(){
     }
     openGroupDetail(g);
     if(shouldVote){window.setTimeout(()=>$("#detailVote")?.click(),220)}
-    if(shouldJoin&&g.invite_url){
-      const info=$("#detailRedirectInfo");
-      let seconds=5;
-      info.style.display="block";
-      info.textContent=`Weiterleitung zur Gruppe in ${seconds} Sekunden…`;
-      const countdown=window.setInterval(()=>{
-        seconds-=1;
-        info.textContent=`Weiterleitung zur Gruppe in ${seconds} Sekunden…`;
-        if(seconds<=0)window.clearInterval(countdown);
-      },1000);
-      window.setTimeout(()=>{window.location.assign(g.invite_url)},5000);
-    }
+    /* Nunca redirigir automáticamente: el usuario entra al grupo solo al
+       pulsar el botón "Chat jetzt beitreten" de la tarjeta. */
   },250);
 }
 
