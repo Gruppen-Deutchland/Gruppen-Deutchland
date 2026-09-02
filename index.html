@@ -525,6 +525,22 @@ header .nav #openAuth:hover{background:#0ea5e9!important;border-color:#0ea5e9!im
 .profile-page .profile-group-card .group-card-footer{grid-template-columns:1fr 28px auto}
 @media(max-width:760px){.profile-page .my-groups-list.profile-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}}
 @media(max-width:470px){.profile-page .my-groups-list.profile-cards-grid{gap:10px}}
+/* Perfil: exactamente la misma cabecera que la página principal */
+.profile-page>header .logo::before{display:none!important}
+@media(min-width:921px){.profile-page>header{background:linear-gradient(100deg,#14a84b 0%,#16a34a 62%,#119547 100%)!important}}
+@media(max-width:920px){.profile-page>header{background:#16a34a!important}}
+@media(min-width:921px){
+  .profile-page>header .nav .logo{min-width:168px!important;gap:0!important}
+  .profile-page>header .logo-image{width:145px!important}
+}
+@media(min-width:921px) and (max-width:1120px){
+  .profile-page>header .nav .logo{min-width:142px!important}
+  .profile-page>header .logo-image{width:132px!important}
+}
+@media(max-width:620px){
+  .profile-page>header .nav .logo{left:10px!important;top:11px!important;gap:0!important}
+  .profile-page>header .logo-image{width:128px!important}
+}
 </style>
 </head>
 <body>
