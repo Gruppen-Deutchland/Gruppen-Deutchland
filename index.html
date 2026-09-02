@@ -1132,7 +1132,7 @@ loadGroups();
     if(!document.body.classList.contains("profile-page"))return;
     const list=$("#myGroupsList");if(!list||list.dataset.profileCards==="ready")return;
     const oldCards=[...list.querySelectorAll(".my-group-item")];if(!oldCards.length)return;
-    const publicView=!!publicProfileId;
+    const publicView=new URLSearchParams(location.search).has("user");
     const groups=oldCards.map(item=>{
       const id=(item.querySelector("[data-public-group]")?.dataset.publicGroup||item.querySelector("[data-own-edit]")?.dataset.ownEdit||"");
       return getProfileGroup(id);
