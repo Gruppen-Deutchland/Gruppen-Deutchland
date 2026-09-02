@@ -1173,5 +1173,26 @@ loadGroups();
 <script>
 (()=>{const originalLoadMyGroups=loadMyGroups;loadMyGroups=async(...args)=>{const list=document.querySelector("#myGroupsList");if(list)delete list.dataset.profileCards;return originalLoadMyGroups(...args)}})();
 </script>
+<script>
+/* Garantiza las tarjetas de perfil aunque el directorio aún esté cargando. */
+window.addEventListener("load",()=>{
+  let attempts=0;
+  const retry=window.setInterval(async()=>{
+    const list=document.querySelector("#myGroupsList");
+    if(!list||!document.body.classList.contains("profile-page")){if(++attempts>30)window.clearInterval(retry);return}
+    const rows=[...list.querySelectorAll(".my-group-item")];
+    if(!rows.length){if(++attempts>30)window.clearInterval(retry);return}
+    const ids=rows.map(row=>row.querySelector("[data-public-group]")?.dataset.publicGroup||row.querySelector("[data-own-edit]")?.dataset.ownEdit).filter(Boolean);
+    const missing=ids.filter(id=>!state.groups.some(group=>String(group.id)===String(id)));
+    if(missing.length&&db){
+      const {data}=await db.from("groups").select("id,name,description,category,platform,country,status,image_url,invite_url,tags,created_at,votes_count,rating_avg,owner_name").in("id",missing);
+      (data||[]).forEach(group=>{if(!state.groups.some(current=>String(current.id)===String(group.id)))state.groups.push(group)});
+    }
+    delete list.dataset.profileCards;
+    list.appendChild(document.createComment("profile-cards"));
+    if(++attempts>30)window.clearInterval(retry);
+  },450);
+});
+</script>
 </body>
 </html>
