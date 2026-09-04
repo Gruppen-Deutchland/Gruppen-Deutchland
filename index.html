@@ -1326,6 +1326,9 @@ window.addEventListener("load",()=>{
 .platform-card-icon.telegram{background:#229ED9}
 .platform-card-icon svg{width:23px;height:23px;display:block}
 @media(max-width:620px){.group-card.telegram-card{background:linear-gradient(145deg,#edfaff,#cceeff)!important}.platform-card-icon{left:8px;bottom:7px}}
+/* La descripción siempre es visible, también en teléfonos angostos. */
+.group-card .card-description{display:-webkit-box!important;margin:0 auto 4px;overflow:hidden;color:#397b78;font-size:13px;line-height:1.35;text-align:center;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+@media(max-width:470px){.group-card .card-description{display:-webkit-box!important;flex:0 0 30px!important;min-height:30px!important;margin:0 0 3px!important;font-size:10px!important;text-align:left!important}.group-card .group-tags{flex:0 0 34px!important;height:34px!important;min-height:34px!important}}
 </style>
 <script>
 /* Añade el color y el icono correcto después de cargar cada tarjeta. */
