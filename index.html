@@ -620,6 +620,19 @@ html,body{max-width:100%;overflow-x:hidden}
   header .nav .add-btn::after{content:"＋";font-size:17px}
 }
 .gt-profile-avatar-wrap{position:relative;width:max-content;margin:-54px auto 10px}.gt-profile-avatar-wrap .gt-profile-avatar{margin:0}.gt-profile-avatar-edit{position:absolute;right:0;bottom:0;width:31px;height:31px;border:3px solid #fff;border-radius:50%;background:#16a34a;color:#fff;font-size:14px;box-shadow:0 2px 7px rgba(0,0,0,.18)}
+/* Las líneas de las tarjetas no se superponen en pantallas pequeñas. */
+@media(max-width:470px){
+  .group-card{height:326px!important}
+  .group-card .group-image{height:151px!important}
+  .group-card .group-content{height:175px!important;padding:7px 8px 9px!important;overflow:hidden!important}
+  .group-card .group-title{flex:0 0 37px!important;margin:0 0 3px!important}
+  .group-card .group-category{flex:0 0 20px!important;height:20px!important;line-height:20px!important;overflow:hidden!important}
+  .group-card .card-description{display:none!important}
+  .group-card .group-tags{display:flex!important;flex:0 0 56px!important;height:56px!important;min-height:56px!important;margin:0!important;white-space:normal!important;flex-wrap:wrap!important;align-content:flex-start!important;justify-content:center!important;gap:1px 5px!important;line-height:1.22!important;overflow:hidden!important}
+  .group-card .group-tags .small{display:inline!important;max-width:100%!important;white-space:nowrap!important;font-size:12px!important}
+  .group-card .group-tags .small+.small::before{content:""!important}
+  .group-card .group-card-footer{flex:0 0 22px!important;min-height:22px!important;margin-top:auto!important}
+}
 </style>
 </head>
 <body>
