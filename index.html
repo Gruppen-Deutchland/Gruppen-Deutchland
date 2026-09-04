@@ -598,6 +598,27 @@ html,body{max-width:100%;overflow-x:hidden}
   header .nav .add-btn{max-width:104px!important}
   .groups-grid,.profile-page .my-groups-list.profile-cards-grid{gap:8px!important}
 }
+/* Controles compactos: no se recortan en móviles de 320–430 px. */
+@media(max-width:430px){
+  header .nav{gap:4px!important}
+  header .nav .logo{flex:1 1 auto!important}
+  header .logo-image,.profile-page>header .logo-image{width:clamp(92px,29vw,112px)!important}
+  header .nav-right{flex:0 0 auto!important;max-width:none!important;gap:4px!important}
+  header .nav .add-btn{width:78px!important;max-width:78px!important;justify-content:center!important;font-size:0!important;padding:6px!important}
+  header .nav .add-btn::after{content:"＋ Gruppe";font-size:10px;line-height:1;white-space:nowrap}
+  header .nav #openAuth{width:38px!important;padding:6px!important;justify-content:center!important;font-size:0!important}
+  header .nav #openAuth::after{content:"👤";font-size:16px;line-height:1}
+  header .nav #openMyGroups{width:38px!important;padding:4px!important;justify-content:center!important}
+  header .nav #openMyGroups .nav-profile-name{display:none!important}
+  .directory-bar{grid-template-columns:minmax(0,1fr)!important}
+  .directory-bar .sort-full{grid-column:auto!important}
+  .directory-bar select{min-width:0!important;max-width:100%!important}
+}
+@media(max-width:340px){
+  header .logo-image,.profile-page>header .logo-image{width:86px!important}
+  header .nav .add-btn{width:66px!important;max-width:66px!important}
+  header .nav .add-btn::after{content:"＋";font-size:17px}
+}
 </style>
 </head>
 <body>
