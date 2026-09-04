@@ -903,8 +903,9 @@ async function groupPublishMetadata(inviteUrl){
   const {data,error}=await db.functions.invoke("group-metadata",{body:{invite_url:cleanUrl}});
   if(error)throw error;
   if(!data?.name)throw new Error(data?.error||"Der Gruppenname konnte nicht aus dem Link gelesen werden.");
-  if(!data?.image_url)throw new Error("Das Gruppenbild konnte nicht geladen werden. Bitte überprüfe, ob der Einladungslink öffentlich ist.");
-  return {...data,name:String(data.name).trim(),image_url:String(data.image_url).trim()};
+  /* WhatsApp puede ocultar la imagen de determinados grupos. El nombre sí se
+     conserva y la publicación no debe fallar por esa limitación externa. */
+  return {...data,name:String(data.name).trim(),image_url:String(data.image_url||"").trim()};
 }
 function setupProfilePublishing(){
   const form=$("#addForm");
