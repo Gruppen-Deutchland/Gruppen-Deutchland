@@ -900,12 +900,10 @@ async function groupPublishMetadata(inviteUrl){
   if(!/^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(cleanUrl)){
     throw new Error("Bitte füge einen gültigen WhatsApp- oder Telegram-Einladungslink ein.");
   }
-  const response=await fetch(`${SUPABASE_URL}/functions/v1/group-metadata`,{
+  const response=await fetch(`${GROUPTREFF_URL}g/metadata`,{
     method:"POST",
     headers:{
-      "Content-Type":"application/json",
-      apikey:SUPABASE_ANON_KEY,
-      Authorization:`Bearer ${SUPABASE_ANON_KEY}`
+      "Content-Type":"application/json"
     },
     body:JSON.stringify({invite_url:cleanUrl})
   });
