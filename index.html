@@ -900,8 +900,17 @@ async function groupPublishMetadata(inviteUrl){
   if(!/^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(cleanUrl)){
     throw new Error("Bitte füge einen gültigen WhatsApp- oder Telegram-Einladungslink ein.");
   }
-  const {data,error}=await db.functions.invoke("group-metadata",{body:{invite_url:cleanUrl}});
-  if(error)throw error;
+  const response=await fetch(`${SUPABASE_URL}/functions/v1/group-metadata`,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      apikey:SUPABASE_ANON_KEY,
+      Authorization:`Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body:JSON.stringify({invite_url:cleanUrl})
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data?.error||"Die Gruppendaten konnten nicht geladen werden.");
   if(!data?.name)throw new Error(data?.error||"Der Gruppenname konnte nicht aus dem Link gelesen werden.");
   /* WhatsApp puede ocultar la imagen de determinados grupos. El nombre sí se
      conserva y la publicación no debe fallar por esa limitación externa. */
