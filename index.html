@@ -742,7 +742,10 @@ function groupPageUrl(group){
   if(typeof group==="object"&&group)return `${GROUPTREFF_URL}g/${encodeURIComponent(groupPathKey(group))}`;
   return `${GROUPTREFF_URL}?g=${encodeURIComponent(shortGroupId(group))}`;
 }
-function votePageUrl(group){return `${GROUPTREFF_URL}?g=${encodeURIComponent(shortGroupId(typeof group==="object"?group.id:group))}&vote=1`}
+function votePageUrl(group){
+  if(typeof group==="object"&&group)return `${GROUPTREFF_URL}g/${encodeURIComponent(groupPathKey(group))}?vote=1`;
+  return `${GROUPTREFF_URL}g/${encodeURIComponent(shortGroupId(group))}?vote=1`;
+}
 function ensureVoteQr(){let box=$("#detailVoteQr");if(box)return box;box=document.createElement("div");box.id="detailVoteQr";box.className="detail-vote-qr";box.innerHTML='<strong>📲 QR-Code der Gruppe</strong><img id="detailVoteQrImage" alt="QR-Code für die Gruppenseite"><span>Scanne den Code, um die Gruppenkarte zu öffnen.</span>';$("#detailPageLink").closest(".detail-link-row").insertAdjacentElement("afterend",box);return box}
 function placeVoteLink(){const actions=$(".detail-actions"),label=document.querySelector('label[for="detailPageLink"]'),row=$("#detailPageLink")?.closest(".detail-link-row");if(actions&&label&&row){actions.insertAdjacentElement("afterend",label);label.insertAdjacentElement("afterend",row);row.insertAdjacentElement("afterend",ensureVoteQr())}}
 function setAdultBadge(adult){let badge=$("#detailAdultBadge");if(!badge){badge=document.createElement("div");badge.id="detailAdultBadge";badge.className="detail-adult-badge";badge.textContent="🔞 Ab 18+";$("#detailJoin").insertAdjacentElement("afterend",badge)}badge.classList.toggle("show",adult)}
