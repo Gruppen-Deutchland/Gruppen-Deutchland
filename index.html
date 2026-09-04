@@ -567,6 +567,37 @@ html,body{max-width:100%;overflow-x:hidden}
   .group-card .group-content{height:148px!important;padding-left:6px!important;padding-right:6px!important}
   .group-card .group-title{font-size:14px!important}
 }
+/* Móvil: disposición fluida desde teléfonos compactos (320 px) hasta pantallas grandes. */
+@media(max-width:620px){
+  body{min-width:0!important}
+  header{min-height:108px!important}
+  header .nav{height:108px!important;min-height:108px!important;padding:8px 10px!important;align-items:flex-start!important;gap:6px!important}
+  header .nav .logo{position:static!important;margin:3px 0 0!important;min-width:0!important;flex:0 1 auto!important}
+  header .logo-image,.profile-page>header .logo-image{width:clamp(98px,34vw,128px)!important;height:auto!important}
+  header .nav-right{position:static!important;display:flex!important;margin-left:auto!important;padding:0!important;width:auto!important;max-width:58vw!important;gap:5px!important;background:transparent!important;border:0!important;box-shadow:none!important;flex:0 0 auto!important}
+  header .nav #openAuth,header .nav #openMyGroups,header .nav .add-btn{position:static!important;display:inline-flex!important;transform:none!important;min-width:0!important;min-height:34px!important;padding:6px 8px!important;font-size:11px!important;line-height:1.15!important;white-space:nowrap!important}
+  header .nav .add-btn{max-width:126px!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  header .nav-search{display:flex!important;position:absolute!important;left:10px!important;right:10px!important;top:58px!important;width:auto!important;min-width:0!important;height:40px!important;margin:0!important;transform:none!important}
+  .hero{padding:38px 12px 30px!important}
+  .hero h1{font-size:clamp(27px,8vw,38px)!important}
+  .hero p{font-size:14px!important}
+  .container{padding:24px 10px 46px!important}
+  .country-list,.categories{flex-wrap:nowrap!important;overflow-x:auto!important;padding-bottom:4px!important;-webkit-overflow-scrolling:touch}
+  .country-btn,.category{flex:0 0 auto!important}
+  .groups-grid,.profile-page .my-groups-list.profile-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;padding:0!important;gap:clamp(8px,3vw,14px)!important}
+  .group-card{width:100%!important;min-width:0!important}
+  .modal{padding:8px!important;align-items:flex-end!important}
+  .modal-box{max-width:100%!important;max-height:88dvh!important;border-radius:16px 16px 0 0!important}
+  .share-chat-box{right:10px!important;bottom:78px!important;width:calc(100vw - 20px)!important}
+}
+@media(max-width:360px){
+  header .nav{padding-left:8px!important;padding-right:8px!important}
+  header .logo-image,.profile-page>header .logo-image{width:94px!important}
+  header .nav-right{gap:3px!important;max-width:61vw!important}
+  header .nav #openAuth,header .nav #openMyGroups,header .nav .add-btn{padding:6px!important;font-size:10px!important}
+  header .nav .add-btn{max-width:104px!important}
+  .groups-grid,.profile-page .my-groups-list.profile-cards-grid{gap:8px!important}
+}
 </style>
 </head>
 <body>
@@ -672,7 +703,10 @@ function groupSlug(name){return String(name||"gruppe").normalize("NFD").replace(
 function groupPathKey(group){return `${groupSlug(group?.name)}-${shortGroupId(group?.id)}`}
 /* Las fichas se abren dentro del index: así se usan los iconos SVG y no se
    muestran entidades HTML (por ejemplo &#x1f1e9;) como texto. */
-function groupPageUrl(group){return `${GROUPTREFF_URL}?g=${encodeURIComponent(typeof group==="object"?shortGroupId(group.id):shortGroupId(group))}`}
+function groupPageUrl(group){
+  if(typeof group==="object"&&group)return `${GROUPTREFF_URL}g/${encodeURIComponent(groupPathKey(group))}`;
+  return `${GROUPTREFF_URL}?g=${encodeURIComponent(shortGroupId(group))}`;
+}
 function votePageUrl(group){return `${GROUPTREFF_URL}?g=${encodeURIComponent(shortGroupId(typeof group==="object"?group.id:group))}&vote=1`}
 function ensureVoteQr(){let box=$("#detailVoteQr");if(box)return box;box=document.createElement("div");box.id="detailVoteQr";box.className="detail-vote-qr";box.innerHTML='<strong>📲 QR-Code der Gruppe</strong><img id="detailVoteQrImage" alt="QR-Code für die Gruppenseite"><span>Scanne den Code, um die Gruppenkarte zu öffnen.</span>';$("#detailPageLink").closest(".detail-link-row").insertAdjacentElement("afterend",box);return box}
 function placeVoteLink(){const actions=$(".detail-actions"),label=document.querySelector('label[for="detailPageLink"]'),row=$("#detailPageLink")?.closest(".detail-link-row");if(actions&&label&&row){actions.insertAdjacentElement("afterend",label);label.insertAdjacentElement("afterend",row);row.insertAdjacentElement("afterend",ensureVoteQr())}}
