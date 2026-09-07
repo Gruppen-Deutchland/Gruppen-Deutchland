@@ -767,9 +767,30 @@ function votePageUrl(group){
 function ensureVoteQr(){let box=$("#detailVoteQr");if(box)return box;box=document.createElement("div");box.id="detailVoteQr";box.className="detail-vote-qr";box.innerHTML='<strong>📲 QR-Code der Gruppe</strong><img id="detailVoteQrImage" alt="QR-Code für die Gruppenseite"><span>Scanne den Code, um die Gruppenkarte zu öffnen.</span>';$("#detailPageLink").closest(".detail-link-row").insertAdjacentElement("afterend",box);return box}
 function placeVoteLink(){const actions=$(".detail-actions"),label=document.querySelector('label[for="detailPageLink"]'),row=$("#detailPageLink")?.closest(".detail-link-row");if(actions&&label&&row){actions.insertAdjacentElement("afterend",label);label.insertAdjacentElement("afterend",row);row.insertAdjacentElement("afterend",ensureVoteQr())}}
 function setAdultBadge(adult){let badge=$("#detailAdultBadge");if(!badge){badge=document.createElement("div");badge.id="detailAdultBadge";badge.className="detail-adult-badge";badge.textContent="🔞 Ab 18+";$("#detailJoin").insertAdjacentElement("afterend",badge)}badge.classList.toggle("show",adult)}
+let directoryUrlBeforeDetail = null;
+
+function syncGroupUrl(g){
+  if(!g)return;
+  const current = new URL(window.location.href);
+  const target = new URL(groupPageUrl(g));
+  if(current.pathname===target.pathname && current.search===target.search)return;
+  if(!directoryUrlBeforeDetail){
+    directoryUrlBeforeDetail = current.pathname.startsWith("/g/") ? GROUPTREFF_URL : current.href;
+  }
+  history.replaceState({group:String(g.id)},"",target.href);
+}
+
+function restoreDirectoryUrl(){
+  const target = directoryUrlBeforeDetail || GROUPTREFF_URL;
+  directoryUrlBeforeDetail = null;
+  state.detail = null;
+  history.replaceState({},"",target);
+}
+
 function openGroupDetail(g){
   if(!g)return;
   state.detail=g;
+  syncGroupUrl(g);
   const img=$("#detailImage"),fallback=$("#detailImageFallback");
   if(g.image_url){img.src=g.image_url;img.style.display="block";fallback.style.display="none"}else{img.removeAttribute("src");img.style.display="none";fallback.style.display="grid"}
   img.onerror=()=>{img.style.display="none";fallback.style.display="grid"};
@@ -821,7 +842,20 @@ async function checkApprovedSubmissions(){if(!db)return;const items=getSubmitted
 function initApprovalChat(){renderApprovalNotifications();const box=$("#shareChatBox"),toggle=$("#shareChatToggle");toggle?.addEventListener("click",()=>{box.classList.toggle("active");if(box.classList.contains("active"))markApprovalNotificationsRead()});$("#shareChatClose")?.addEventListener("click",()=>box.classList.remove("active"));document.addEventListener("click",async e=>{const copy=e.target.closest("[data-notify-copy]");if(copy){const item=getSubmittedGroups().find(x=>String(x.id)===String(copy.dataset.notifyCopy)),url=groupPageUrl(item||copy.dataset.notifyCopy);try{await navigator.clipboard.writeText(url);const old=copy.textContent;copy.textContent="✅ Kopiert";setTimeout(()=>copy.textContent=old,1200)}catch{}}const share=e.target.closest("[data-notify-share]");if(share){const id=share.dataset.notifyShare,item=getSubmittedGroups().find(x=>String(x.id)===String(id)),url=groupPageUrl(item||id),text=`${countryInfo(item?.country||"DE").flag} ${item?.name||"Meine Gruppe"} wurde auf GroupTreff freigeschaltet`;if(navigator.share){try{await navigator.share({title:item?.name||"GroupTreff",text,url})}catch{}}else{window.open(`https://wa.me/?text=${encodeURIComponent(text+" "+url)}`,"_blank")}}});checkApprovedSubmissions();setInterval(checkApprovedSubmissions,15000);window.addEventListener("focus",checkApprovedSubmissions)}
 function demoGroups(){return [{id:"1",name:"Singles Deutschland",category:"Singles",platform:"WhatsApp",country:"DE",description:"Lerne neue Menschen kennen und finde interessante Kontakte.",image_url:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["singles","chat"],rating_avg:4.9,votes_count:128,created_at:"2026-08-10"},{id:"2",name:"Gaming Deutschland",category:"Gaming",platform:"WhatsApp",country:"DE",description:"Gaming, Freunde, gemeinsame Spiele und spannende Gespräche.",image_url:"https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["gaming","freunde"],rating_avg:4.8,votes_count:96,created_at:"2026-08-09"},{id:"3",name:"Reisen Deutschland",category:"Reisen",platform:"WhatsApp",country:"DE",description:"Tipps, Reiseideen und Austausch über die schönsten Reiseziele.",image_url:"https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["reisen","urlaub"],rating_avg:4.7,votes_count:74,created_at:"2026-08-08"},{id:"4",name:"Musik Freunde",category:"Musik",platform:"WhatsApp",country:"DE",description:"Musikfans aus Deutschland treffen, diskutieren und austauschen.",image_url:"https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["musik","freunde"],rating_avg:4.6,votes_count:61,created_at:"2026-08-07"},{id:"5",name:"Deutsch Lernen 🇩🇪",category:"Lernen",platform:"WhatsApp",country:"DE",description:"Gemeinsam Deutsch lernen, üben und neue Kontakte knüpfen.",image_url:"https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["deutsch","lernen"],rating_avg:4.8,votes_count:53,created_at:"2026-08-06"},{id:"6",name:"Jobs Deutschland",category:"Jobs",platform:"WhatsApp",country:"DE",description:"Stellenangebote, Jobs und berufliche Möglichkeiten in Deutschland.",image_url:"https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["jobs","arbeit"],rating_avg:4.5,votes_count:42,created_at:"2026-08-05"},{id:"7",name:"Freunde Berlin",category:"Freundschaft",platform:"WhatsApp",country:"DE",description:"Neue Freundschaften, Treffen und Freizeit in Berlin.",image_url:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["berlin","freunde"],rating_avg:4.4,votes_count:37,created_at:"2026-08-04"},{id:"8",name:"Freizeit Deutschland",category:"Freizeit",platform:"WhatsApp",country:"DE",description:"Hobbys, Events, Ausflüge und gemeinsame Freizeitaktivitäten.",image_url:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["freizeit","hobby"],rating_avg:4.3,votes_count:29,created_at:"2026-08-03"},{id:"9",name:"Deutschland Community",category:"Community",platform:"WhatsApp",country:"DE",description:"Allgemeine Community für Gespräche und neue Kontakte.",image_url:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["community","deutschland"],rating_avg:4.2,votes_count:22,created_at:"2026-08-02"},{id:"10",name:"Hamburg Community",category:"Community",platform:"WhatsApp",country:"DE",description:"Menschen aus Hamburg kennenlernen und austauschen.",image_url:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",invite_url:"https://chat.whatsapp.com/",tags:["hamburg","community"],rating_avg:4.1,votes_count:18,created_at:"2026-08-01"}]}
 document.body.classList.remove("dark");localStorage.removeItem("darkMode");
-function openModal(id){$("#"+id)?.classList.add("active")}function closeModal(id){$("#"+id)?.classList.remove("active")}document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)closeModal(m.id)}));
+function openModal(id){$("#"+id)?.classList.add("active")}function closeModal(id){$("#"+id)?.classList.remove("active");if(id==="detailModal"&&state.detail)restoreDirectoryUrl()}document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)closeModal(m.id)}));
+window.addEventListener("popstate",()=>{
+  const params=new URLSearchParams(window.location.search);
+  const pathMatch=window.location.pathname.match(/\/g\/([^/?#]+)/i);
+  const id=pathMatch?decodeURIComponent(pathMatch[1]):(params.get("g")||params.get("gruppe"));
+  if(!id){
+    $("#detailModal")?.classList.remove("active");
+    state.detail=null;
+    return;
+  }
+  const normalizedId=String(id||"").toLowerCase();
+  const g=state.groups.find(x=>String(x.id)===String(id)||shortGroupId(x.id)===String(id)||legacyGroupId(x.id)===String(id).toUpperCase()||groupPathKey(x).toLowerCase()===normalizedId);
+  if(g)openGroupDetail(g);
+});
 let currentUser=null;
 function displayName(user){return String(user?.user_metadata?.username||user?.email?.split("@")[0]||"Benutzer")}
 function showNotice(id,message,type="err"){const n=$("#"+id);if(!n)return;n.textContent=message;n.className=`notice show ${type}`}
