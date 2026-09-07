@@ -935,7 +935,33 @@ $("#countryDirectory").addEventListener("click",e=>{
   render();
 });
 
-$("#categories").addEventListener("click",e=>{const b=e.target.closest("[data-category]");if(!b)return;state.category=b.dataset.category;state.page=1;buildCategories();render()});["search","platformFilter","sortFilter","perPage"].forEach(id=>$("#"+id).addEventListener(id==="search"?"input":"change",()=>{state.page=1;render()}));$("#pagination").addEventListener("click",e=>{const b=e.target.closest("[data-page]");if(!b)return;state.page=+b.dataset.page;render();document.querySelector(".directory-bar").scrollIntoView({behavior:"smooth",block:"start"})});
+$("#categories").addEventListener("click",e=>{const b=e.target.closest("[data-category]");if(!b)return;state.category=b.dataset.category;state.page=1;buildCategories();render()});["search","platformFilter","sortFilter","perPage"].forEach(id=>$("#"+id).addEventListener(id==="search"?"input":"change",()=>{state.page=1;render()}));$("#pagination").addEventListener("click",e=>{
+  const b=e.target.closest("[data-page]");
+  if(!b)return;
+
+  state.page=+b.dataset.page;
+
+  const url=new URL(window.location.href);
+
+  if(state.page>1){
+    url.searchParams.set("page",String(state.page));
+  }else{
+    url.searchParams.delete("page");
+  }
+
+  history.pushState(
+    {page:state.page},
+    "",
+    url
+  );
+
+  render();
+
+  document.querySelector(".directory-bar")?.scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
+});
 document.addEventListener("click",e=>{const s=e.target.closest("[data-share]");if(s){const g=state.groups.find(x=>String(x.id)===String(s.dataset.share));if(g){state.share=g;$("#shareTitle").textContent=g.name;openModal("shareModal")}}const v=e.target.closest("[data-vote]");if(v){const g=state.groups.find(x=>String(x.id)===String(v.dataset.vote));if(!g)return;state.voteGroup=g;state.rating=0;$("#voteTitle").textContent=`Wie viele Sterne gibst du „${g.name}“?`;document.querySelectorAll(".star-choice").forEach(x=>x.classList.remove("active"));openModal("voteModal")}});
 document.querySelectorAll(".star-choice").forEach(btn=>btn.addEventListener("click",()=>{state.rating=+btn.dataset.rating;document.querySelectorAll(".star-choice").forEach(x=>x.classList.toggle("active",+x.dataset.rating<=state.rating))}));
 $("#navSearch")?.addEventListener("submit",e=>{e.preventDefault();const value=$("#navSearchInput").value.trim();$("#search").value=value;state.page=1;render();document.querySelector("#gruppenverzeichnis")?.scrollIntoView({behavior:"smooth",block:"start"})});
@@ -1146,6 +1172,23 @@ buildCategories();
 render();
 openSharedGroupFromUrl();
 }
+// Mantener la página actual del directorio después de recargar
+const initialParams=new URLSearchParams(window.location.search);
+const initialPage=parseInt(initialParams.get("page")||"1",10);
+
+if(Number.isFinite(initialPage)&&initialPage>0){
+  state.page=initialPage;
+}
+
+// Permitir que los botones Atrás/Adelante del navegador restauren la página
+window.addEventListener("popstate",()=>{
+  const params=new URLSearchParams(window.location.search);
+  const page=parseInt(params.get("page")||"1",10);
+
+  state.page=Number.isFinite(page)&&page>0?page:1;
+  render();
+});
+
 loadGroups();
 
 </script>
