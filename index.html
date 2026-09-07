@@ -736,7 +736,23 @@ function cleanPageUrl(){const u=new URL(window.location.href);u.search="";u.hash
 const GROUPTREFF_URL="https://grouptreff.de/";
 function legacyGroupId(id){return `GT-${String(id||"").replace(/[^a-zA-Z0-9]/g,"").slice(0,8).toUpperCase()}`}
 function shortGroupId(id){let hash=0;for(const char of String(id||"")){hash=((hash<<5)-hash)+char.charCodeAt(0);hash|=0}return String(10000+(Math.abs(hash)%90000))}
-function groupSlug(name){return String(name||"gruppe").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/ß/g,"ss").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,55)||"gruppe"}
+function groupSlug(name){
+  return String(name || "gruppe")
+    // Elimina entidades HTML de emojis, por ejemplo &#x1f525; o &#128293;
+    .replace(/&#x[0-9a-f]+;?/gi, " ")
+    .replace(/&#\d+;?/g, " ")
+    // Elimina códigos de emoji que puedan llegar como x1f525 / \x1f525
+    .replace(/(?:\\?x)?1f[0-9a-f]{3,5}/gi, " ")
+    // Elimina emojis Unicode reales
+    .replace(/\p{Extended_Pictographic}/gu, " ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0,55) || "gruppe";
+}
 function groupPathKey(group){return `${groupSlug(group?.name)}-${shortGroupId(group?.id)}`}
 /* Las fichas se abren dentro del index: así se usan los iconos SVG y no se
    muestran entidades HTML (por ejemplo &#x1f1e9;) como texto. */
