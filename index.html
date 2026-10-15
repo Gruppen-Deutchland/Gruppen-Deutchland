@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#16a34a">
+<meta name="theme-color" content="#075844">
 <link rel="manifest" href="manifest.webmanifest?v=10">
 <link rel="icon" type="image/png" sizes="48x48" href="favicon-48x48.png?v=10">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=10">
@@ -804,9 +804,8 @@ function openGroupPreview(g){
 $("#previewNext")?.addEventListener("click",()=>{
   const group=state.previewGroup;
   if(!group)return;
-  closeModal("groupPreviewModal");
-  openGroupDetail(group);
-  document.getElementById("detailModal")?.classList.add("active");
+  // Navegación real a la página individual servida por Cloudflare Worker.
+  window.location.assign(groupPageUrl(group));
 });
 function openGroupDetail(g){
   if(!g)return;
@@ -1619,6 +1618,21 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 @media(max-width:390px){.groups-grid{gap:8px!important;padding:0 8px!important}}
 @media(prefers-reduced-motion:reduce){.group-card,.group-card .group-image img,.nav-btn,.category,.country-btn,.page-btn{transition:none!important}.group-card:hover,.group-card:hover .group-image img{transform:none!important}}
 </style>
+<style id="grouptreff-forest-header">
+/* GroupTreff · cabecera verde bosque, contraste y botones destacados */
+:root{--header:#075844}
+header,body.dark header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%,#087d5b 100%)!important;border-bottom:1px solid rgba(255,255,255,.14)!important;box-shadow:0 5px 22px rgba(3,52,39,.20)!important;backdrop-filter:none}
+.profile-page>header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%,#087d5b 100%)!important}
+.nav .logo-image{filter:brightness(0) invert(1)}
+.nav .nav-btn:not(.add-btn):not(.nav-profile-trigger),.language-trigger,.mobile-menu-toggle{border:1px solid rgba(255,255,255,.42)!important;background:rgba(255,255,255,.12)!important;color:#fff!important;box-shadow:0 2px 7px rgba(0,0,0,.08);transition:background .2s,transform .2s,box-shadow .2s}
+.nav .nav-btn:not(.add-btn):not(.nav-profile-trigger):hover,.language-trigger:hover,.mobile-menu-toggle:hover{background:rgba(255,255,255,.23)!important;transform:translateY(-1px)}
+.nav .add-btn,.nav.mobile-menu-open .nav-right .add-btn{background:#29db79!important;color:#063b2c!important;border:1px solid #57ee9b!important;font-weight:900!important;box-shadow:0 4px 13px rgba(0,0,0,.20)!important;transition:filter .2s,box-shadow .2s}
+.nav .add-btn:hover{filter:brightness(1.07);box-shadow:0 7px 18px rgba(0,0,0,.25)!important}
+.nav .nav-profile-trigger,.nav #openMyGroups.nav-profile-trigger{background:#fff!important;color:#075844!important;border:1px solid #fff!important;font-weight:900!important}
+.nav-search{border-color:rgba(255,255,255,.45)!important;background:rgba(255,255,255,.13)!important}
+.nav-search input,.nav-search button{color:#fff!important}.nav-search input::placeholder{color:rgba(255,255,255,.82)!important}
+@media(max-width:620px){.nav.mobile-menu-open .nav-right{background:#fff!important}.nav.mobile-menu-open .nav-right .nav-btn:not(.add-btn){color:#075844!important;background:#f3faf6!important;border-color:#d2e8db!important}.nav.mobile-menu-open .nav-right .add-btn{color:#063b2c!important}}
+</style>
 <style id="grouptreff-two-stage-preview">
 #groupPreviewModal{z-index:550}
 .group-preview-box{max-width:420px;min-height:330px;padding:32px 24px;text-align:center;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
@@ -1652,9 +1666,8 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
       event.preventDefault();event.stopImmediatePropagation();
       const g=state.previewGroup;
       if(!g)return;
-      byId('groupPreviewModal')?.classList.remove('active');
-      openGroupDetail(g);
-      byId('detailModal')?.classList.add('active');
+      // No abrir otro modal: cargar la URL independiente del grupo.
+      window.location.assign(groupPageUrl(g));
       return;
     }
     const card=event.target.closest('#groupsGrid .group-card, .profile-group-card');
