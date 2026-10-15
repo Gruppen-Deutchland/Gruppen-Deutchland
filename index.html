@@ -1284,6 +1284,14 @@ render();
 openSharedGroupFromUrl();
 }
 // Mantener la página actual del directorio después de recargar
+// Búsqueda desde las páginas individuales generadas por Cloudflare Worker.
+const incomingSearch=new URLSearchParams(window.location.search).get("search");
+if(incomingSearch!==null){
+  const directorySearch=document.getElementById("search");
+  const headerSearch=document.getElementById("navSearchInput");
+  if(directorySearch)directorySearch.value=incomingSearch;
+  if(headerSearch)headerSearch.value=incomingSearch;
+}
 const initialParams=new URLSearchParams(window.location.search);
 const initialPage=parseInt(initialParams.get("page")||"1",10);
 
@@ -1632,6 +1640,18 @@ header,body.dark header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%
 .nav-search{border-color:rgba(255,255,255,.45)!important;background:rgba(255,255,255,.13)!important}
 .nav-search input,.nav-search button{color:#fff!important}.nav-search input::placeholder{color:rgba(255,255,255,.82)!important}
 @media(max-width:620px){.nav.mobile-menu-open .nav-right{background:#fff!important}.nav.mobile-menu-open .nav-right .nav-btn:not(.add-btn){color:#075844!important;background:#f3faf6!important;border-color:#d2e8db!important}.nav.mobile-menu-open .nav-right .add-btn{color:#063b2c!important}}
+/* Buscador visible en móviles sin ocultar el acceso ni el menú. */
+@media(max-width:620px){
+  header .nav{height:108px!important;min-height:108px!important;position:relative}
+  header .nav-search{display:flex!important;position:absolute!important;top:59px!important;left:10px!important;right:10px!important;width:auto!important;height:39px!important;transform:none!important;margin:0!important;border-radius:10px!important;z-index:3}
+  header .nav-search input{width:100%;font-size:13px!important}
+  header .nav-search button{flex:0 0 43px}
+  header .nav-right{top:54px!important}
+  header .nav.mobile-menu-open .nav-right{top:54px!important;z-index:150!important}
+}
+@media(min-width:621px) and (max-width:920px){
+  header .nav-search{display:flex!important;position:absolute!important;top:62px!important;left:14px!important;right:14px!important;width:auto!important;transform:none!important;max-width:none!important}
+}
 </style>
 <style id="grouptreff-two-stage-preview">
 #groupPreviewModal{z-index:550}
