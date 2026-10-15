@@ -646,6 +646,14 @@ header .nav.mobile-menu-open .nav-right .add-btn{
   border-color:#25d366!important;
   color:#ffffff!important;
 }
+
+/* Vorschau des Gruppenbilds automatisch aus dem Einladungslink */
+.group-link-preview{display:flex;align-items:center;gap:12px;margin:-2px 0 15px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--card2);color:var(--text)}
+.group-link-preview[hidden]{display:none!important}
+.group-link-preview-image{width:70px;height:70px;flex:0 0 70px;object-fit:cover;border-radius:50%;border:2px solid var(--border)}
+.group-link-preview-info{min-width:0;display:flex;flex-direction:column;gap:5px}
+.group-link-preview-name{font-size:14px;overflow-wrap:anywhere}
+.group-link-preview-status{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -675,7 +683,7 @@ header .nav.mobile-menu-open .nav-right .add-btn{
 </div>
 
 </footer>
-<div class="modal" id="addModal"><div class="modal-box"><button class="close" data-close="addModal">×</button><h2>➕ Gruppe hinzufügen</h2><p class="modal-sub">Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht.</p><div class="notice" id="addNotice"></div><form id="addForm"><div class="form-group"><label>Gruppenname *</label><input name="name" maxlength="80" required placeholder="z. B. Deutsche Community"></div><div class="form-row"><div class="form-group"><label>Plattform *</label><select name="platform" required><option>WhatsApp</option><option>Telegram</option></select></div><div class="form-group"><label>Land *</label><div style="display:flex;align-items:center;gap:9px"><span id="countrySelectFlag"></span><select name="country" id="countrySelect" required><option value="DE">Deutschland</option><option value="US">USA</option><option value="ES">Spanien</option><option value="AU">Australien</option><option value="GB">England</option></select></div></div></div><div class="form-group"><label>Kategorie *</label><select name="category" required><option value="Adult">🔞 Adult</option><option value="Alle">✨ Alle</option><option value="Singles">💘 Singles</option><option value="Freundschaft">🤝 Freundschaft</option><option value="Gaming">🎮 Gaming</option><option value="Freizeit">🎉 Freizeit</option><option value="Reisen">🌍 Reisen</option><option value="Musik">🎵 Musik</option><option value="Lernen">📚 Lernen</option><option value="Jobs">💼 Jobs</option><option value="Community">💬 Community</option><option value="Andere">📁 Andere</option></select></div><div class="form-group"><label>Einladungslink *</label><input name="invite_url" type="url" required placeholder="https://chat.whatsapp.com/..."></div><div class="form-group"><label>Gruppenbild</label><input name="image_file" id="imageFile" type="file" accept="image/*"><div class="small">Wähle ein Bild direkt aus deiner Galerie aus.</div><div id="imagePreviewWrap" style="display:none;margin-top:10px"><img id="imagePreview" alt="Vorschau" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"></div></div><div class="form-group"><label>Beschreibung</label><textarea name="description" maxlength="500" placeholder="Beschreibe deine Gruppe..."></textarea></div><div class="form-group"><label>Tags</label><input name="tags" placeholder="chat, deutschland, freunde"></div><button class="submit" type="submit">Anfrage senden</button></form></div></div>
+<div class="modal" id="addModal"><div class="modal-box"><button class="close" data-close="addModal">×</button><h2>➕ Gruppe hinzufügen</h2><p class="modal-sub">Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht.</p><div class="notice" id="addNotice"></div><form id="addForm"><div class="form-group"><label>Gruppenname *</label><input name="name" maxlength="80" required placeholder="z. B. Deutsche Community"></div><div class="form-row"><div class="form-group"><label>Plattform *</label><select name="platform" required><option>WhatsApp</option><option>Telegram</option></select></div><div class="form-group"><label>Land *</label><div style="display:flex;align-items:center;gap:9px"><span id="countrySelectFlag"></span><select name="country" id="countrySelect" required><option value="DE">Deutschland</option><option value="US">USA</option><option value="ES">Spanien</option><option value="AU">Australien</option><option value="GB">England</option></select></div></div></div><div class="form-group"><label>Kategorie *</label><select name="category" required><option value="Adult">🔞 Adult</option><option value="Alle">✨ Alle</option><option value="Singles">💘 Singles</option><option value="Freundschaft">🤝 Freundschaft</option><option value="Gaming">🎮 Gaming</option><option value="Freizeit">🎉 Freizeit</option><option value="Reisen">🌍 Reisen</option><option value="Musik">🎵 Musik</option><option value="Lernen">📚 Lernen</option><option value="Jobs">💼 Jobs</option><option value="Community">💬 Community</option><option value="Andere">📁 Andere</option></select></div><div class="form-group"><label>Einladungslink *</label><input name="invite_url" type="url" required placeholder="https://chat.whatsapp.com/..."></div><div class="form-group"><label>Beschreibung</label><textarea name="description" maxlength="500" placeholder="Beschreibe deine Gruppe..."></textarea></div><div class="form-group"><label>Tags</label><input name="tags" placeholder="chat, deutschland, freunde"></div><button class="submit" type="submit">Anfrage senden</button></form></div></div>
 <div class="modal" id="authModal"><div class="modal-box auth-modal-box"><button class="close" data-close="authModal">×</button><h2>👤 Dein GroupTreff-Konto</h2><p class="modal-sub">Ein Konto ist optional. Melde dich an, wenn du deine eingereichten Gruppen später verwalten möchtest.</p><div class="auth-tabs"><button class="auth-tab active" id="loginTab" type="button">Login</button><button class="auth-tab" id="registerTab" type="button">Sign up</button></div><div class="notice" id="authNotice"></div><form id="loginForm"><div class="form-group"><label>E-Mail *</label><input name="email" type="email" autocomplete="email" required placeholder="name@email.de"></div><div class="form-group"><label>Passwort *</label><input name="password" type="password" autocomplete="current-password" required placeholder="Dein Passwort"></div><button class="submit" type="submit">Login</button></form><form id="registerForm" style="display:none"><div class="form-group"><label>Benutzername *</label><input name="username" minlength="2" maxlength="30" required placeholder="z. B. MaxBerlin"></div><div class="form-group"><label>E-Mail *</label><input name="email" type="email" autocomplete="email" required placeholder="name@email.de"></div><div class="form-row"><div class="form-group"><label>Passwort *</label><input name="password" type="password" minlength="6" autocomplete="new-password" required></div><div class="form-group"><label>Wiederholen *</label><input name="password_confirm" type="password" minlength="6" autocomplete="new-password" required></div></div><button class="submit" type="submit">Sign up</button></form></div></div>
 <div class="modal" id="myGroupsModal"><div class="modal-box my-groups-box"><button class="close" data-close="myGroupsModal">×</button><div class="profile-identity"><div class="profile-avatar-wrap"><div class="profile-avatar" id="profileAvatar">👤</div><label class="profile-avatar-edit" for="profileAvatarInput" title="Profilfoto ändern">✎</label><input id="profileAvatarInput" type="file" accept="image/*" hidden></div><div><h2>👤 Mein Profil</h2><p class="modal-sub" id="profileEmail"></p></div></div><div class="my-groups-head"><div><p class="modal-sub">Hier siehst du deine veröffentlichten Gruppen und kannst abgelaufene Links aktualisieren.</p></div><button class="mini-green-btn" id="refreshMyGroups" type="button">↻ Aktualisieren</button></div><div class="notice" id="myGroupsNotice"></div><div class="my-groups-list" id="myGroupsList"><div class="my-group-empty">Deine Gruppen werden geladen…</div></div></div></div>
 <div class="modal" id="groupPreviewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle"><div class="modal-box group-preview-box"><button class="close" type="button" data-close="groupPreviewModal" aria-label="Schließen">×</button><div class="preview-votes" id="previewVotes">★ 0</div><div class="preview-avatar"><img id="previewImage" alt="Gruppenbild"><span id="previewFallback">💬</span><i class="preview-online" aria-hidden="true"></i></div><h2 id="previewTitle">Gruppe</h2><button class="preview-next" id="previewNext" type="button">Jetzt dem Chat beitreten</button></div></div>
@@ -1043,26 +1051,9 @@ function shareData(){const g=state.share;if(!g)return null;const c=countryInfo(g
 })();
 
 const IMAGE_BUCKET="group-images";
-const imageFileInput=$("#imageFile"),imagePreview=$("#imagePreview"),imagePreviewWrap=$("#imagePreviewWrap");
-imageFileInput?.addEventListener("change",()=>{const file=imageFileInput.files?.[0];if(!file){imagePreviewWrap.style.display="none";imagePreview.removeAttribute("src");return}if(!file.type.startsWith("image/")){alert("Bitte wähle eine Bilddatei aus.");imageFileInput.value="";return}if(file.size>8*1024*1024){alert("Das Bild darf maximal 8 MB groß sein.");imageFileInput.value="";return}if(imagePreview){imagePreview.src=URL.createObjectURL(file);imagePreviewWrap.style.display="block"}});
+
 
 function cleanImageUrl(value){const url=String(value||"").trim();if(!url)return"";try{const u=new URL(url,window.location.href);return ["https:","http:"].includes(u.protocol)?u.href:""}catch{return""}}
-
-async function uploadGroupImage(file){
-  if(!file||!db)return"";
-  if(!file.type?.startsWith("image/"))throw new Error("Die ausgewählte Datei ist kein Bild.");
-  if(file.size>8*1024*1024)throw new Error("Das Gruppenbild darf maximal 8 MB groß sein.");
-  const ext=(file.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
-  const fileName=`${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-  const uploader=currentUser?.id||`guest-${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;
-  const path=`groups/${uploader}/${fileName}`;
-  const{error}=await db.storage.from(IMAGE_BUCKET).upload(path,file,{cacheControl:"31536000",upsert:false,contentType:file.type||"image/jpeg"});
-  if(error)throw error;
-  const{data}=db.storage.from(IMAGE_BUCKET).getPublicUrl(path);
-  const publicUrl=cleanImageUrl(data?.publicUrl);
-  if(!publicUrl)throw new Error("Das Gruppenbild konnte nicht öffentlich gespeichert werden.");
-  return publicUrl;
-}
 
 async function persistRemoteGroupImage(imageUrl){
   const source=cleanImageUrl(imageUrl);
@@ -1109,6 +1100,55 @@ function setupProfilePublishing(){
   const inviteLabel=inviteInput?.closest(".form-group")?.querySelector("label");
   if(inviteLabel)inviteLabel.textContent="WhatsApp- oder Telegram-Link *";
   if(inviteInput)inviteInput.placeholder="https://chat.whatsapp.com/... oder https://t.me/...";
+  if(inviteInput){
+    const inviteField=inviteInput.closest(".form-group");
+    const preview=document.createElement("div");
+    preview.id="groupLinkPreview";
+    preview.className="group-link-preview";
+    preview.hidden=true;
+    preview.setAttribute("aria-live","polite");
+    preview.innerHTML='<img class="group-link-preview-image" alt="Gruppenbild Vorschau"><div class="group-link-preview-info"><strong class="group-link-preview-name"></strong><span class="group-link-preview-status"></span></div>';
+    inviteField.insertAdjacentElement("afterend",preview);
+    let previewTimer=0,previewVersion=0;
+    const previewImage=preview.querySelector("img");
+    const previewName=preview.querySelector(".group-link-preview-name");
+    const previewStatus=preview.querySelector(".group-link-preview-status");
+    const clearPreview=()=>{preview.hidden=true;previewImage.removeAttribute("src");previewName.textContent="";previewStatus.textContent="";};
+    const updatePreview=async()=>{
+      const link=inviteInput.value.trim();
+      const version=++previewVersion;
+      if(!/^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(link)){
+        clearPreview();return;
+      }
+      preview.hidden=false;
+      previewName.textContent="Gruppenvorschau";
+      previewStatus.textContent="Gruppendaten werden geladen…";
+      previewImage.style.display="none";
+      try{
+        const metadata=await groupPublishMetadata(link);
+        if(version!==previewVersion||inviteInput.value.trim()!==link)return;
+        previewName.textContent=metadata.name||"Gruppe";
+        const imageUrl=cleanImageUrl(metadata.image_url);
+        if(imageUrl){
+          previewImage.onload=()=>{if(version===previewVersion){previewImage.style.display="block";previewStatus.textContent=metadata.platform||"Gruppenbild geladen";}};
+          previewImage.onerror=()=>{if(version===previewVersion){previewImage.style.display="none";previewStatus.textContent="Gruppenbild nicht öffentlich verfügbar";}};
+          previewImage.src=imageUrl;
+          previewStatus.textContent="Gruppenbild wird geladen…";
+        }else{
+          previewImage.removeAttribute("src");
+          previewStatus.textContent="Gruppenbild nicht öffentlich verfügbar";
+        }
+      }catch(error){
+        if(version!==previewVersion)return;
+        previewImage.style.display="none";
+        previewName.textContent="Keine Vorschau verfügbar";
+        previewStatus.textContent=error.message||"Link prüfen";
+      }
+    };
+    inviteInput.addEventListener("input",()=>{clearTimeout(previewTimer);previewVersion++;previewTimer=setTimeout(updatePreview,550);});
+    inviteInput.addEventListener("change",()=>{clearTimeout(previewTimer);updatePreview();});
+    form.addEventListener("reset",()=>{previewVersion++;clearTimeout(previewTimer);clearPreview();});
+  }
   const addModalSubtitle=$("#addModal .modal-sub");
   if(addModalSubtitle)addModalSubtitle.textContent="Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht. Du kannst auch anonym veröffentlichen – ein Konto ist nicht erforderlich.";
   ["name","platform"].forEach(field=>form.querySelector(`[name="${field}"]`)?.closest(".form-group")?.remove());
@@ -1133,11 +1173,9 @@ function setupProfilePublishing(){
       const meta=await groupPublishMetadata(inviteUrl);
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
-      const selectedImage=imageFileInput?.files?.[0]||null;
-      button.textContent=selectedImage?"Gruppenbild wird gespeichert…":"Gruppe wird gespeichert…";
+      button.textContent="Gruppe wird gespeichert…";
       let imageUrl=cleanImageUrl(meta.image_url);
-      if(selectedImage) imageUrl=await uploadGroupImage(selectedImage);
-      else if(imageUrl) imageUrl=await persistRemoteGroupImage(imageUrl);
+      if(imageUrl) imageUrl=await persistRemoteGroupImage(imageUrl);
       const groupId=crypto.randomUUID();
       const row={id:groupId,name:(meta.name||"Gruppe").slice(0,80),platform:meta.platform||"WhatsApp",country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:imageUrl,description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
       /* Las filas pendientes no se pueden leer públicamente. Por eso no usamos
