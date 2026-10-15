@@ -806,6 +806,7 @@ $("#previewNext")?.addEventListener("click",()=>{
   if(!group)return;
   closeModal("groupPreviewModal");
   openGroupDetail(group);
+  document.getElementById("detailModal")?.classList.add("active");
 });
 function openGroupDetail(g){
   if(!g)return;
@@ -1632,5 +1633,42 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 .preview-next:hover{background:#13ac50}
 @media(max-width:480px){.group-preview-box{min-height:310px;padding:24px 18px}.preview-avatar{width:116px;height:116px}}
 </style>
+
+<script id="grouptreff-two-step-navigation-fix">
+/* Navegación unificada: tarjeta -> vista previa -> ficha completa -> invitación. */
+(()=>{
+  const byId=id=>document.getElementById(id);
+  const lookup=card=>{
+    const id=card?.querySelector('[data-vote]')?.dataset.vote || card?.dataset.profileCard;
+    if(!id)return null;
+    return (typeof state!=='undefined'&&state.groups?.find(g=>String(g.id)===String(id))) ||
+      (typeof getProfileGroup==='function'?getProfileGroup(id):null);
+  };
+  // Se registra en captura para evitar que un enlace interno o un handler previo
+  // redirija directamente a WhatsApp o abra la ficha saltándose la vista previa.
+  window.addEventListener('click',event=>{
+    const next=event.target.closest('#previewNext');
+    if(next){
+      event.preventDefault();event.stopImmediatePropagation();
+      const g=state.previewGroup;
+      if(!g)return;
+      byId('groupPreviewModal')?.classList.remove('active');
+      openGroupDetail(g);
+      byId('detailModal')?.classList.add('active');
+      return;
+    }
+    const card=event.target.closest('#groupsGrid .group-card, .profile-group-card');
+    if(!card)return;
+    if(event.target.closest('[data-vote],[data-share],[data-public-profile],[data-profile-update],.group-share,.top-vote,.owner-profile'))return;
+    if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+    const g=lookup(card);
+    if(!g)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    byId('detailModal')?.classList.remove('active');
+    openGroupPreview(g);
+    byId('groupPreviewModal')?.classList.add('active');
+  },true);
+})();
+</script>
 </body>
 </html>
