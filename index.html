@@ -654,6 +654,12 @@ header .nav.mobile-menu-open .nav-right .add-btn{
 .group-link-preview-info{min-width:0;display:flex;flex-direction:column;gap:5px}
 .group-link-preview-name{font-size:14px;overflow-wrap:anywhere}
 .group-link-preview-status{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+
+/* Öffentliche Gruppenstatistiken */
+.gt-public-stats{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;color:#216747;font-size:11px;font-weight:700;margin:3px 0 6px;min-height:16px}
+.gt-public-stats span{white-space:nowrap}.dark .gt-public-stats{color:#b7f5cc}
+.gt-detail-stats{margin:9px auto 13px;font-size:13px;gap:19px}
+.group-card .gt-public-stats{width:100%;margin:2px 0 5px}
 </style>
 </head>
 <body>
@@ -1749,6 +1755,93 @@ header,body.dark header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%
     openGroupPreview(g);
     byId('groupPreviewModal')?.classList.add('active');
   },true);
+})();
+</script>
+
+<script>
+/* GroupTreff: öffentliche Aufrufe und Beitrittsklicks.
+   Benötigt das separate Supabase-SQL-Skript. */
+(()=>{
+  const api=SUPABASE_URL+'/rest/v1/';
+  const headers={apikey:SUPABASE_ANON_KEY,'Content-Type':'application/json'};
+  const counters=new Map();
+  let loading=false;
+  const format=n=>new Intl.NumberFormat('de-DE').format(Math.max(0,Number(n)||0));
+  const findGroup=card=>{
+    const id=card?.querySelector('[data-vote]')?.dataset.vote || card?.querySelector('[data-share]')?.dataset.share;
+    if(id)return state.groups.find(g=>String(g.id)===String(id));
+    const title=card?.querySelector('.group-title')?.textContent?.trim();
+    return title?state.groups.find(g=>String(g.name).trim()===title):null;
+  };
+  const metricMarkup=(id,detail=false)=>{
+    const v=counters.get(String(id))||{views:0,joins:0};
+    return `<div class="gt-public-stats ${detail?'gt-detail-stats':''}" aria-label="Gruppenstatistik"><span title="Gruppenaufrufe">👁 ${format(v.views)} Aufrufe</span><span title="Klicks auf Beitreten">↗ ${format(v.joins)} Beitritte</span></div>`;
+  };
+  function decorate(){
+    document.querySelectorAll('#groupsGrid .group-card').forEach(card=>{
+      const g=findGroup(card);if(!g)return;
+      const target=card.querySelector('.group-card-footer')||card.querySelector('.card-actions');
+      if(!target)return;
+      let box=card.querySelector('.gt-public-stats');
+      if(!box){box=document.createElement('div');box.className='gt-public-stats';target.parentNode.insertBefore(box,target)}
+      const html=metricMarkup(g.id).replace(/^<div[^>]*>/,'').replace(/<\/div>$/,'');
+      if(box.innerHTML!==html)box.innerHTML=html;
+    });
+    const g=state.detail;
+    if(g && document.getElementById('detailModal')?.classList.contains('active')){
+      const anchor=document.getElementById('detailDescription');
+      let box=document.getElementById('gtDetailStats');
+      if(anchor&&!box){box=document.createElement('div');box.id='gtDetailStats';box.className='gt-public-stats gt-detail-stats';anchor.insertAdjacentElement('afterend',box)}
+      if(box){const html=metricMarkup(g.id,true).replace(/^<div[^>]*>/,'').replace(/<\/div>$/,'');if(box.innerHTML!==html)box.innerHTML=html}
+    }
+  }
+  async function refresh(){
+    if(loading||!state.groups?.length)return;
+    loading=true;
+    try{
+      const ids=state.groups.map(g=>String(g.id));
+      // Los grupos se cargan por lotes para no exceder el tamaño de la URL.
+      for(let i=0;i<ids.length;i+=50){
+        const batch=ids.slice(i,i+50);
+        const filter='in.('+batch.map(x=>'"'+x.replace(/"/g,'')+'"').join(',')+')';
+        const res=await fetch(api+'group_public_stats?select=group_id,views,joins&group_id='+encodeURIComponent(filter),{headers});
+        if(!res.ok)throw new Error('Stats no disponibles');
+        for(const item of await res.json())counters.set(String(item.group_id),item);
+      }
+      decorate();
+    }catch(err){console.info('GroupTreff: ejecuta primero el SQL de estadísticas.',err.message)}
+    finally{loading=false}
+  }
+  async function record(g,kind){
+    if(!g?.id)return;
+    const id=String(g.id),day=new Date().toLocaleDateString('en-CA');
+    const key='gt-stat-'+kind+'-'+id+'-'+day;
+    // Limita a una visita por navegador y grupo al día; no es antifraude absoluto.
+    if(kind==='view'&&localStorage.getItem(key))return;
+    try{
+      const res=await fetch(api+'rpc/record_group_public_event',{method:'POST',headers,body:JSON.stringify({p_group_id:id,p_kind:kind})});
+      if(!res.ok)throw new Error('RPC '+res.status);
+      if(kind==='view')localStorage.setItem(key,'1');
+      const old=counters.get(id)||{group_id:id,views:0,joins:0};
+      old[kind==='view'?'views':'joins']=Number(old[kind==='view'?'views':'joins']||0)+1;
+      counters.set(id,old);decorate();
+    }catch(err){console.info('No se pudo registrar la estadística:',err.message)}
+  }
+  const originalDetail=openGroupDetail;
+  openGroupDetail=function(g){originalDetail(g);decorate();record(g,'view')};
+  const originalPreview=openGroupPreview;
+  openGroupPreview=function(g){originalPreview(g);record(g,'view')};
+  document.addEventListener('click',event=>{
+    const join=event.target.closest('#detailJoin, #groupsGrid a.join');
+    if(!join)return;
+    const g=join.id==='detailJoin'?state.detail:findGroup(join.closest('.group-card'));
+    if(g)record(g,'join');
+  },true);
+  const grid=document.getElementById('groupsGrid');
+  if(grid)new MutationObserver(()=>{decorate();if(state.groups?.length&&!counters.size)refresh()}).observe(grid,{childList:true});
+  decorate();refresh();
+  window.addEventListener('load',()=>{decorate();refresh()});
+  window.setInterval(()=>{if(state.groups?.length)refresh()},60000);
 })();
 </script>
 </body>
