@@ -33,7 +33,7 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://grouptreff.de/">
 <link rel="sitemap" type="application/xml" href="https://grouptreff.de/sitemap.xml">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"GroupTreff","url":"https://grouptreff.de/","description":"Finde öffentliche WhatsApp Gruppen und Telegram Gruppen in Deutschland. Entdecke Gruppen für Freundschaft, Dating, Gaming, Musik, Städte und mehr oder veröffentliche kostenlos deine eigene Gruppe.","inLanguage":"de","keywords":"WhatsApp Gruppen Deutschland, Telegram Gruppen Deutschland, WhatsApp Gruppen finden, Telegram Gruppen finden, Gruppenverzeichnis Deutschland"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"GroupTreff","url":"https://grouptreff.de/","description":"Finde öffentliche WhatsApp Gruppen und Telegram Gruppen in Deutschland. Entdecke Gruppen für Freundschaft, Dating, Gaming, Musik, Städte und mehr oder veröffentliche kostenlos deine eigene Gruppe.","inLanguage":"de","potentialAction":{"@type":"SearchAction","target":"https://grouptreff.de/?search={search_term_string}","query-input":"required name=search_term_string"},"keywords":"WhatsApp Gruppen Deutschland, Telegram Gruppen Deutschland, WhatsApp Gruppen finden, Telegram Gruppen finden, Gruppenverzeichnis Deutschland"}</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#f5f7fa;--card:#fff;--card2:#f8fafc;--text:#172033;--muted:#6b7280;--primary:#16a34a;--primary-dark:#12823c;--border:#e5e7eb;--shadow:0 10px 30px rgba(15,23,42,.07);--header:rgba(255,255,255,.93);--gold:#f59e0b;--danger:#dc2626}
@@ -660,6 +660,16 @@ header .nav.mobile-menu-open .nav-right .add-btn{
 .gt-public-stats span{white-space:nowrap}.dark .gt-public-stats{color:#b7f5cc}
 .gt-detail-stats{margin:9px auto 13px;font-size:13px;gap:19px}
 .group-card .gt-public-stats{width:100%;margin:2px 0 5px}
+
+/* Interne Verlinkung aller freigegebenen Gruppenseiten – unabhängig von der Paginierung. */
+.seo-directory{margin:25px 0 0;padding:15px 18px;background:var(--card);border:1px solid var(--border);border-radius:13px;color:var(--text)}
+.seo-directory summary{cursor:pointer;font-size:14px;font-weight:800;color:var(--primary-dark)}
+.seo-directory p{font-size:12px;color:var(--muted);margin:9px 0 12px}
+.seo-directory-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 16px}
+.seo-directory-links a{font-size:13px;line-height:1.4;color:var(--text);text-decoration:underline;text-decoration-color:rgba(22,163,74,.35);overflow-wrap:anywhere}
+.seo-directory-links a:hover{color:var(--primary-dark)}
+@media(max-width:760px){.seo-directory{margin:20px 14px 0}.seo-directory-links{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:470px){.seo-directory-links{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -675,7 +685,7 @@ header .nav.mobile-menu-open .nav-right .add-btn{
   </div>
   <div class="country-list" id="countryDirectory"></div>
 </div>
-<div class="section-title"><div><h2>🔎 Kategorien entdecken</h2><p>Wähle eine Kategorie oder durchsuche alle Gruppen.</p></div></div><div class="categories" id="categories"></div><div class="directory-bar"><select id="platformFilter"><option value="Alle">Alle Plattformen</option><option value="WhatsApp">WhatsApp</option><option value="Telegram">Telegram</option></select><select id="sortFilter"><option value="votes">⭐ Beste Bewertung</option><option value="votes_count">🔥 Meiste Stimmen</option><option value="newest">🆕 Neueste zuerst</option><option value="name">A–Z</option></select><select id="perPage" class="sort-full"><option value="8">8 Gruppen pro Seite</option><option value="12" selected>12 Gruppen pro Seite</option><option value="16">16 Gruppen pro Seite</option></select></div><div class="section-title groups-heading" id="gruppenverzeichnis"><h2>Aktuelle deutsche WhatsApp Gruppen</h2><span class="result-count" id="resultCount"></span></div><div class="groups-grid" id="groupsGrid"><div class="loading">Gruppen werden geladen…</div></div><div class="pagination" id="pagination"></div><section class="cta"><h2>Hast du eine eigene Gruppe?</h2><p>Veröffentliche deine WhatsApp-Gruppe im Verzeichnis und sammle Stimmen.</p><button id="openAdd2">＋ Meine Gruppe hinzufügen</button></section></main>
+<div class="section-title"><div><h2>🔎 Kategorien entdecken</h2><p>Wähle eine Kategorie oder durchsuche alle Gruppen.</p></div></div><div class="categories" id="categories"></div><div class="directory-bar"><select id="platformFilter"><option value="Alle">Alle Plattformen</option><option value="WhatsApp">WhatsApp</option><option value="Telegram">Telegram</option></select><select id="sortFilter"><option value="votes">⭐ Beste Bewertung</option><option value="votes_count">🔥 Meiste Stimmen</option><option value="newest">🆕 Neueste zuerst</option><option value="name">A–Z</option></select><select id="perPage" class="sort-full"><option value="8">8 Gruppen pro Seite</option><option value="12" selected>12 Gruppen pro Seite</option><option value="16">16 Gruppen pro Seite</option></select></div><div class="section-title groups-heading" id="gruppenverzeichnis"><h2>Aktuelle deutsche WhatsApp Gruppen</h2><span class="result-count" id="resultCount"></span></div><div class="groups-grid" id="groupsGrid"><div class="loading">Gruppen werden geladen…</div></div><div class="pagination" id="pagination"></div><nav class="seo-directory" id="seoDirectory" aria-label="Alle öffentlichen Gruppen"><details><summary>Alle WhatsApp- und Telegram-Gruppen ansehen</summary><p>Entdecke die öffentlichen Gruppenseiten direkt im GroupTreff-Verzeichnis.</p><div class="seo-directory-links" id="seoDirectoryLinks"></div></details></nav><section class="cta"><h2>Hast du eine eigene Gruppe?</h2><p>Veröffentliche deine WhatsApp-Gruppe im Verzeichnis und sammle Stimmen.</p><button id="openAdd2">＋ Meine Gruppe hinzufügen</button></section></main>
 <footer><div class="footer-inner"><div><div class="footer-logo">GroupTreff</div><p style="margin-top:7px;font-size:13px">Ein unabhängiges Gruppenverzeichnis.</p></div><div class="footer-links"><a href="#top">Startseite</a><a href="https://t.me/GroupTreff" target="_blank" rel="noopener noreferrer">Über uns</a><a href="#">Datenschutz</a><a href="#">Nutzungsbedingungen</a><a href="https://t.me/GroupTreff" target="_blank" rel="noopener noreferrer">Kontakt</a><a href="https://t.me/thcar90" target="_blank" rel="noopener noreferrer">Support</a></div></div>
 <div class="footer-app-install">
   <div class="footer-app-inner">
@@ -971,6 +981,18 @@ render=function(){
   document.querySelectorAll(".group-image img").forEach(img=>img.addEventListener("error",()=>{img.onerror=null;img.removeAttribute("src");img.style.display="none";if(img.nextElementSibling)img.nextElementSibling.style.display="grid"},{once:true}));
   $("#pagination").innerHTML=pages>1?Array.from({length:pages},(_,i)=>`<button class="page-btn ${i+1===state.page?"active":""}" data-page="${i+1}">${i+1}</button>`).join(""):"";
 };
+
+function renderSeoDirectory(){
+  const target=document.getElementById("seoDirectoryLinks");
+  if(!target)return;
+  const seen=new Set();
+  target.innerHTML=(state.groups||[]).filter(g=>g&&g.id&&g.name).map(g=>{
+    const url=groupPageUrl(g);
+    if(seen.has(url))return "";
+    seen.add(url);
+    return `<a href="${esc(url)}" title="${esc(g.name)} – Gruppenseite">${esc(g.name)}</a>`;
+  }).join("");
+}
 
 function updateCountrySelectFlag(){
   const sel=$("#countrySelect"),box=$("#countrySelectFlag");
@@ -1293,6 +1315,7 @@ state.groups=demoGroups();
 buildCountries();
 buildCategories();
 render();
+renderSeoDirectory();
 openSharedGroupFromUrl();
 return
 }
@@ -1335,6 +1358,7 @@ country:normalizeCountry(g.country||"DE")
 buildCountries();
 buildCategories();
 render();
+renderSeoDirectory();
 openSharedGroupFromUrl();
 }
 // Mantener la página actual del directorio después de recargar
