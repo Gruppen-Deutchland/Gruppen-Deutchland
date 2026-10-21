@@ -678,6 +678,13 @@ header .nav.mobile-menu-open .nav-right .add-btn{
 .group-card.group-expired .online-dot{display:none!important}
 .group-card .expired-label{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:4px 8px;background:#374151;color:white;border-radius:6px;font-size:11px;font-weight:800;z-index:4}
 .group-card.group-expired .top-vote{color:#6b7280!important}
+
+/* Confirmación de mayoría de edad para la categoría Adult */
+.gt-age-overlay{position:fixed;inset:0;z-index:20000;background:rgba(10,20,16,.78);display:none;align-items:center;justify-content:center;padding:18px}
+.gt-age-overlay.is-open{display:flex}
+.gt-age-dialog{width:min(440px,100%);background:var(--card);color:var(--text);border-radius:20px;padding:29px 25px;text-align:center;box-shadow:0 20px 60px #0005}
+.gt-age-symbol{font-size:42px;margin-bottom:8px}.gt-age-dialog h2{font-size:23px;margin-bottom:10px}.gt-age-dialog p{font-size:14px;color:var(--muted);margin-bottom:22px;line-height:1.55}
+.gt-age-options{display:grid;gap:10px}.gt-age-options button{border:0;border-radius:11px;padding:13px;font-weight:800}.gt-age-yes{background:#16a34a;color:white}.gt-age-no{background:var(--card2);color:var(--text);border:1px solid var(--border)!important}
 </style>
 <style id="grouptreff-vote-design">
 /* Votaciones: botón verde con contador visible, sin alterar la lógica existente. */
@@ -787,6 +794,21 @@ header .nav.mobile-menu-open .nav-right .add-btn{
   #groupsGrid .group-card .group-card-footer,.profile-group-card .group-card-footer{gap:5px!important}
   #groupsGrid .group-card .age-badge,.profile-group-card .age-badge{padding:3px 5px!important;font-size:9px!important}
   #groupsGrid .group-card .gt-footer-views,.profile-group-card .gt-footer-views{font-size:10px!important}
+}
+</style>
+
+<style id="gt-category-only-footer-fix">
+/* La categoría aparece exclusivamente en la etiqueta inferior derecha.
+   Conservamos el nodo oculto porque el JS lo utiliza para insertar la descripción. */
+#groupsGrid .group-card .group-category,
+.profile-group-card .group-category {
+  display:none!important; visibility:hidden!important; height:0!important;
+  min-height:0!important; max-height:0!important; flex:0 0 0!important;
+  margin:0!important; padding:0!important; overflow:hidden!important;
+}
+#groupsGrid .group-card .group-card-footer .age-badge,
+.profile-group-card .group-card-footer .age-badge {
+  display:inline-flex!important;
 }
 </style>
 </head>
@@ -2014,6 +2036,86 @@ header,body.dark header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%
  }
  const obs=new MutationObserver(()=>{update()});
  const start=()=>{update();obs.observe(document.body,{childList:true,subtree:true})};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
+<div class="gt-age-overlay" id="gtAgeOverlay" role="dialog" aria-modal="true" aria-labelledby="gtAgeTitle" aria-hidden="true">
+ <div class="gt-age-dialog"><div class="gt-age-symbol">🔞</div><h2 id="gtAgeTitle">Nur für Erwachsene (18+)</h2>
+ <p>Dieser Bereich enthält Inhalte für Erwachsene. Bitte bestätige, dass du mindestens 18 Jahre alt bist.</p>
+ <div class="gt-age-options"><button class="gt-age-yes" id="gtAgeYes" type="button">Ja, ich bin mindestens 18 Jahre alt</button><button class="gt-age-no" id="gtAgeNo" type="button">Nein, ich bin unter 18</button></div></div>
+</div>
+<script id="gt-age-gate">
+(()=>{
+ const overlay=document.getElementById('gtAgeOverlay');
+ const yes=document.getElementById('gtAgeYes'),no=document.getElementById('gtAgeNo');
+ let pending=null,allowNext=false;
+ const verified=()=>sessionStorage.getItem('gt-adult-confirmed')==='yes';
+ function isAdultCard(card){
+   const label=card?.querySelector('.age-badge,.group-category');
+   return !!label && /(?:adult|adulto|🔞)/i.test(label.textContent||'');
+ }
+ function ask(action){pending=action;overlay.classList.add('is-open');overlay.setAttribute('aria-hidden','false');yes.focus()}
+ function dismiss(){overlay.classList.remove('is-open');overlay.setAttribute('aria-hidden','true')}
+ document.addEventListener('click',e=>{
+   if(allowNext||verified())return;
+   const category=e.target.closest('[data-category="Adult"]');
+   const card=e.target.closest('#groupsGrid .group-card,.profile-group-card');
+   const detailJoin=e.target.closest('#detailJoin');
+   if(!category && !(card&&isAdultCard(card)) && !(detailJoin&&typeof state!=='undefined'&&state.detail&&String(state.detail.category||'').toLowerCase().includes('adult')))return;
+   e.preventDefault();e.stopImmediatePropagation();
+   const target=category||e.target.closest('button,a,[role="button"]')||card||detailJoin;
+   ask(()=>{allowNext=true;try{target.click()}finally{allowNext=false}});
+ },true);
+ yes.addEventListener('click',()=>{sessionStorage.setItem('gt-adult-confirmed','yes');dismiss();const action=pending;pending=null;if(action)action()});
+ no.addEventListener('click',()=>{pending=null;dismiss();const all=document.querySelector('[data-category="Alle"]');if(all&&document.querySelector('[data-category="Adult"].active'))all.click()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('is-open')){pending=null;dismiss()}});
+})();
+</script>
+
+<style id="gt-adult-image-blur">
+/* Censura preventiva: no se revelan miniaturas adultas sin confirmar 18+. */
+.group-card.gt-adult-image .group-image img,
+.profile-group-card.gt-adult-image .group-image img,
+.my-group-item.gt-adult-image .my-group-thumb,
+body.gt-adult-detail:not(.gt-age-confirmed) .detail-cover img {
+  filter:blur(19px) brightness(.83) !important;
+  transform:scale(1.10);
+  transition:filter .25s ease,transform .25s ease;
+}
+/* Mantener las fotos de adultos borrosas en las tarjetas aun después de confirmar. */
+.group-card.gt-adult-image .group-image>div[role="button"],
+.group-card.gt-adult-image .group-image>a {overflow:hidden}
+body.gt-age-confirmed.gt-adult-detail .detail-cover img {filter:none;transform:none}
+</style>
+<script id="gt-adult-image-blur-script">
+(()=>{
+ const isAdult=v=>/\b(?:adult|adulto|erwachsene|18\+)\b|🔞/i.test(String(v||''));
+ function update(){
+   document.querySelectorAll('#groupsGrid .group-card,.profile-group-card').forEach(card=>{
+     const badge=card.querySelector('.age-badge');
+     card.classList.toggle('gt-adult-image',isAdult(badge?.textContent));
+   });
+   document.querySelectorAll('.my-group-item').forEach(item=>{
+     item.classList.toggle('gt-adult-image',isAdult(item.querySelector('.my-group-meta')?.textContent));
+   });
+   const detail=typeof state!=='undefined'&&state.detail;
+   document.body.classList.toggle('gt-adult-detail',!!detail&&isAdult(detail.category));
+   document.body.classList.toggle('gt-age-confirmed',sessionStorage.getItem('gt-adult-confirmed')==='yes');
+ }
+ let queued=false;
+ const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;update()})};
+ function start(){
+   update();
+   const grid=document.getElementById('groupsGrid');
+   if(grid)new MutationObserver(schedule).observe(grid,{childList:true});
+   const profiles=document.getElementById('myGroupsList');
+   if(profiles)new MutationObserver(schedule).observe(profiles,{childList:true});
+   const detailModal=document.getElementById('groupDetailModal');
+   if(detailModal)new MutationObserver(schedule).observe(detailModal,{childList:true,subtree:false,attributes:true,attributeFilter:['class']});
+   document.getElementById('gtAgeYes')?.addEventListener('click',schedule);
+   document.addEventListener('click',schedule);
+ }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
