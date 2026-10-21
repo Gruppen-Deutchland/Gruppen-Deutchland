@@ -2086,26 +2086,48 @@ header,body.dark header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%
 (()=>{
  const overlay=document.getElementById('gtAgeOverlay');
  const yes=document.getElementById('gtAgeYes'),no=document.getElementById('gtAgeNo');
- let pending=null,allowNext=false;
- const verified=()=>sessionStorage.getItem('gt-adult-confirmed')==='yes';
- function isAdultCard(card){
-   const label=card?.querySelector('.age-badge,.group-category');
-   return !!label && /(?:adult|adulto|🔞)/i.test(label.textContent||'');
- }
+ let pending=null;
+ const verified=()=>{try{return localStorage.getItem('gt-adult-confirmed')==='yes'}catch{return false}};
+ const isAdult=v=>/\b(?:adult|adulto|erwachsene|18\+)\b|🔞/i.test(String(v||''));
+ const findGroup=card=>{
+   const id=card?.querySelector('[data-vote]')?.dataset.vote;
+   if(!id||typeof state==='undefined')return null;
+   return (state.groups||[]).find(g=>String(g.id)===String(id))||null;
+ };
+ const adultCard=card=>{
+   const group=findGroup(card);
+   if(group)return isAdult(group.category);
+   return isAdult(card?.querySelector('.age-badge,.group-category')?.textContent);
+ };
  function ask(action){pending=action;overlay.classList.add('is-open');overlay.setAttribute('aria-hidden','false');yes.focus()}
  function dismiss(){overlay.classList.remove('is-open');overlay.setAttribute('aria-hidden','true')}
+ // Una sola confirmacion por navegador, tanto para la categoria como para las tarjetas adultas.
+ // Se intercepta ANTES de abrir la vista previa o navegar a la ficha individual.
  document.addEventListener('click',e=>{
-   if(allowNext||verified())return;
+   if(verified()||overlay.classList.contains('is-open'))return;
    const category=e.target.closest('[data-category="Adult"]');
    const card=e.target.closest('#groupsGrid .group-card,.profile-group-card');
+   const previewNext=e.target.closest('#previewNext');
    const detailJoin=e.target.closest('#detailJoin');
-   if(!category && !(card&&isAdultCard(card)) && !(detailJoin&&typeof state!=='undefined'&&state.detail&&String(state.detail.category||'').toLowerCase().includes('adult')))return;
-   e.preventDefault();e.stopImmediatePropagation();
-   const target=category||e.target.closest('button,a,[role="button"]')||card||detailJoin;
-   ask(()=>{allowNext=true;try{target.click()}finally{allowNext=false}});
+   const previewGroup=typeof state!=='undefined'?state.previewGroup:null;
+   const detailGroup=typeof state!=='undefined'?state.detail:null;
+   const blocked=!!category||(!!card&&adultCard(card))||
+      (!!previewNext&&isAdult(previewGroup?.category))||
+      (!!detailJoin&&isAdult(detailGroup?.category));
+   if(!blocked)return;
+   e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+   const target=category||e.target.closest('button,a,[role="button"]')||card;
+   ask(()=>{if(target?.isConnected)target.click()});
  },true);
- yes.addEventListener('click',()=>{sessionStorage.setItem('gt-adult-confirmed','yes');dismiss();const action=pending;pending=null;if(action)action()});
- no.addEventListener('click',()=>{pending=null;dismiss();const all=document.querySelector('[data-category="Alle"]');if(all&&document.querySelector('[data-category="Adult"].active'))all.click()});
+ yes.addEventListener('click',()=>{
+   try{localStorage.setItem('gt-adult-confirmed','yes')}catch{}
+   dismiss();const action=pending;pending=null;if(action)action();
+ });
+ no.addEventListener('click',()=>{
+   pending=null;dismiss();
+   const all=document.querySelector('[data-category="Alle"]');
+   if(all&&document.querySelector('[data-category="Adult"].active'))all.click();
+ });
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('is-open')){pending=null;dismiss()}});
 })();
 </script>
@@ -2138,7 +2160,7 @@ body.gt-age-confirmed.gt-adult-detail .detail-cover img {filter:none;transform:n
    });
    const detail=typeof state!=='undefined'&&state.detail;
    document.body.classList.toggle('gt-adult-detail',!!detail&&isAdult(detail.category));
-   document.body.classList.toggle('gt-age-confirmed',sessionStorage.getItem('gt-adult-confirmed')==='yes');
+   document.body.classList.toggle('gt-age-confirmed',localStorage.getItem('gt-adult-confirmed')==='yes');
  }
  let queued=false;
  const schedule=()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;update()})};
