@@ -1179,19 +1179,42 @@ $("#categories").addEventListener("click",e=>{const b=e.target.closest("[data-ca
 });
 document.addEventListener("click",e=>{const s=e.target.closest("[data-share]");if(s){const g=state.groups.find(x=>String(x.id)===String(s.dataset.share));if(g){state.share=g;$("#shareTitle").textContent=g.name;openModal("shareModal")}}const v=e.target.closest("[data-vote]");if(v){const g=state.groups.find(x=>String(x.id)===String(v.dataset.vote));if(!g)return;state.voteGroup=g;state.rating=0;$("#voteTitle").textContent=`Möchtest du „${g.name}“ eine Stimme geben?`;document.querySelectorAll(".star-choice").forEach(x=>x.classList.remove("active"));openModal("voteModal")}});
 $("#navSearch")?.addEventListener("submit",e=>{e.preventDefault();const value=$("#navSearchInput").value.trim();$("#search").value=value;state.page=1;render();document.querySelector("#gruppenverzeichnis")?.scrollIntoView({behavior:"smooth",block:"start"})});
+function getGroupTreffVisitorId(){
+  const key="gt:permanent-voter-id:v1";
+  let id=localStorage.getItem(key);
+  if(!id || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)){
+    id=crypto.randomUUID();
+    localStorage.setItem(key,id);
+  }
+  return id;
+}
 $("#sendVote").addEventListener("click",async()=>{
   if(!state.voteGroup||!db)return;
   const button=$("#sendVote"),oldText=button.textContent;
   button.disabled=true;button.textContent="Wird gespeichert…";
   try{
     // La función Edge vote-once debe aceptar visitantes anónimos y registrados, y rechazar duplicados de forma permanente en el servidor.
-    const {data,error}=await db.functions.invoke("vote-once",{body:{group_id:String(state.voteGroup.id)}});
-    if(error||!data?.ok){
-      if(data?.code==="ALREADY_VOTED")alert("Du hast für diese Gruppe bereits abgestimmt.");
-      else alert("Abstimmung derzeit nicht verfügbar. Die sichere Abstimmungsfunktion muss in Supabase eingerichtet werden.");
+    const visitorId=getGroupTreffVisitorId();
+    const {data,error}=await db.functions.invoke("vote-once",{body:{group_id:String(state.voteGroup.id),visitor_id:visitorId}});
+    if(error){
+      console.error("vote-once:",error);
+      alert("Abstimmung konnte nicht gespeichert werden. Bitte versuche es später erneut.");
       return;
     }
-    localStorage.setItem("vote:"+state.voteGroup.id,"1");closeModal("voteModal");await loadGroups();
+    if(data?.already_voted){
+      localStorage.setItem("vote:"+state.voteGroup.id,"1");
+      closeModal("voteModal");
+      alert("Du hast für diese Gruppe bereits abgestimmt.");
+      return;
+    }
+    if(data?.success!==true){
+      console.error("vote-once response:",data);
+      alert("Abstimmung konnte nicht gespeichert werden. Bitte versuche es später erneut.");
+      return;
+    }
+    localStorage.setItem("vote:"+state.voteGroup.id,"1");
+    closeModal("voteModal");
+    await loadGroups();
   }finally{button.disabled=false;button.textContent=oldText;}
 });
 function sharePreviewUrl(group){return groupPageUrl(group)}
@@ -1462,6 +1485,19 @@ function openSharedGroupFromUrl(){
   },250);
 }
 
+async function refreshGroupTreffVoteTotals(){
+  if(!db || !state.groups.length)return;
+  try{
+    const {data,error}=await db.rpc("grouptreff_vote_totals");
+    if(error){
+      console.warn("Die Stimmenübersicht ist noch nicht eingerichtet:",error.message);
+      return;
+    }
+    const totals=new Map((data||[]).map(row=>[String(row.group_id),Number(row.votes)||0]));
+    state.groups.forEach(group=>{group.votes_count=totals.get(String(group.id))||0});
+  }catch(err){console.warn("Stimmenübersicht nicht verfügbar:",err)}
+}
+
 async function loadGroups(){
 if(!db){
 state.groups=demoGroups();
@@ -1508,6 +1544,7 @@ category:normalizeCategory(g.category),
 country:normalizeCountry(g.country||"DE")
 }));
 
+await refreshGroupTreffVoteTotals();
 buildCountries();
 buildCategories();
 render();
