@@ -1400,7 +1400,7 @@ function setupProfilePublishing(){
       /* Nunca borrar la imagen existente solo porque WhatsApp no la devuelve. */
       let imageUrl=cleanImageUrl(meta.image_url);
       if(imageUrl)imageUrl=await persistRemoteGroupImage(imageUrl);
-      else imageUrl=cleanImageUrl(oldGroup?.image_url);
+      if(!imageUrl)imageUrl=cleanImageUrl(oldGroup?.image_url);
       const {error}=await db.from("groups").update({invite_url:inviteUrl.trim(),name:meta.name.slice(0,80),image_url:imageUrl,description:meta.description||"",platform:meta.platform,status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)throw error;showNotice("myGroupsNotice","✅ Link und Gruppendaten wurden aktualisiert. Die Gruppe wird erneut geprüft.","ok");await loadMyGroups();await loadGroups()}catch(error){showNotice("myGroupsNotice",error.message||"Der Link konnte nicht aktualisiert werden.")}
   },true);
   const avatarBox=$("#profileAvatar"),avatarInput=$("#profileAvatarInput"),emailBox=$("#profileEmail");
@@ -1773,7 +1773,7 @@ loadGroups();
     if(!next?.trim())return;
     try{
       const meta=await groupPublishMetadata(next.trim());
-      const {error}=await db.from("groups").update({invite_url:next.trim(),name:meta.name.slice(0,80),image_url:meta.image_url?await persistRemoteGroupImage(meta.image_url):"",description:meta.description||"",platform:meta.platform,status:"pending"}).eq("id",update.dataset.profileUpdate).eq("user_id",currentUser.id);
+      const {error}=await db.from("groups").update({invite_url:next.trim(),name:meta.name.slice(0,80),image_url:(meta.image_url?await persistRemoteGroupImage(meta.image_url):"")||cleanImageUrl(group?.image_url),description:meta.description||"",platform:meta.platform,status:"pending"}).eq("id",update.dataset.profileUpdate).eq("user_id",currentUser.id);
       if(error)throw error;
       showNotice("myGroupsNotice","✅ Link aktualisiert. Die Gruppe wird erneut geprüft.","ok");
       await loadMyGroups();await loadGroups();
@@ -2177,6 +2177,24 @@ body.gt-age-confirmed.gt-adult-detail .detail-cover img {filter:none;transform:n
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
+</script>
+<script>
+/* GroupTreff: show a fallback when a previously saved external image stops loading.
+   Never overwrite the stored image_url because of a display/network failure. */
+document.addEventListener("error",function(event){
+  const img=event.target;
+  if(!(img instanceof HTMLImageElement))return;
+  const container=img.closest(".group-image,.detail-cover,.my-group-item");
+  if(!container)return;
+  img.style.display="none";
+  let fallback=container.querySelector(".image-fallback,.detail-image-fallback");
+  if(fallback){fallback.style.display="grid";return;}
+  fallback=document.createElement("div");
+  fallback.className="image-fallback";
+  fallback.textContent="💬";
+  if(container.classList.contains("my-group-item"))fallback.classList.add("my-group-thumb");
+  img.insertAdjacentElement("afterend",fallback);
+},true);
 </script>
 </body>
 </html>
