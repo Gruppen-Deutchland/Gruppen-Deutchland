@@ -1130,7 +1130,7 @@ render=function(){
     let date="";try{date=g.created_at?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(g.created_at)):""}catch{}
     const platform=String(g.platform||"WhatsApp");
     const platformIcon=platform.toLowerCase()==="telegram"?`<svg viewBox="0 0 48 48" aria-label="Telegram"><circle cx="24" cy="24" r="24" fill="#229ED9"/><path fill="#fff" d="M35.8 13.4 31.9 34c-.3 1.5-1.1 1.9-2.3 1.2l-6-4.4-2.9 2.8c-.3.3-.6.6-1.2.6l.4-6.1 11.1-10c.5-.4-.1-.7-.7-.3L16.6 26.4l-5.9-1.8c-1.3-.4-1.3-1.3.3-1.9l23.1-8.9c1.1-.4 2 .3 1.7 1.6z"/></svg>`:`<svg viewBox="0 0 48 48" aria-label="WhatsApp"><circle cx="24" cy="24" r="24" fill="#25D366"/><path fill="#fff" d="M35 12.9A15.4 15.4 0 0 0 10.8 31.5L8.6 39.6l8.3-2.2A15.4 15.4 0 0 0 35 12.9zm-11 22.9c-2.4 0-4.8-.7-6.8-1.9l-.5-.3-4.9 1.3 1.3-4.8-.3-.5a11.8 11.8 0 1 1 11.2 6.2z"/></svg>`;
-    return `<article class="group-card ${g.link_status==="expired"?"group-expired":""}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div>${owner?`<div class="owner-badge" title="${esc(owner)}"><span class="owner-dot">●</span><span>${esc(owner)}</span></div>`:""}<button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>${g.link_status==="expired"?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div><div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name)} – Gruppenseite öffnen">${esc(g.name)}</a><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(t=>`<span class="small">#${esc(String(t).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div></div></article>`;
+    return `<article class="group-card ${g.link_status==="expired"?"group-expired":""}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><span class="gt-card-country-flag" title="${esc(countryInfo(g.country).name)}">${countryFlagSvg(g.country||"DE",true)}</span>${owner?`<div class="owner-badge" title="${esc(owner)}"><span class="owner-dot">●</span><span>${esc(owner)}</span></div>`:""}<button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>${g.link_status==="expired"?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div><div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name)} – Gruppenseite öffnen">${esc(g.name)}</a><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(t=>`<span class="small">#${esc(String(t).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div></div></article>`;
   }).join(""):`<div class="empty"><h3>😕 Keine Gruppen gefunden</h3><p>Versuche einen anderen Suchbegriff oder Filter.</p></div>`;
   document.querySelectorAll(".group-image img").forEach(img=>img.addEventListener("error",()=>{img.onerror=null;img.removeAttribute("src");img.style.display="none";if(img.nextElementSibling)img.nextElementSibling.style.display="grid"},{once:true}));
   $("#pagination").innerHTML=pages>1?Array.from({length:pages},(_,i)=>`<button class="page-btn ${i+1===state.page?"active":""}" data-page="${i+1}">${i+1}</button>`).join(""):"";
@@ -1775,7 +1775,7 @@ loadGroups();
     const tags=Array.isArray(g.tags)?g.tags:[],category=normalizeCategory(g.category||"Community"),adult=category==="Adult";
     const votes=+g.votes_count||0;
     let date="";try{date=g.created_at?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(g.created_at)):""}catch{}
-    return `<article class="group-card profile-group-card" data-profile-card="${esc(g.id)}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button><span class="online-dot" aria-hidden="true"></span></div><div class="group-content"><div class="group-title">${esc(g.name||"Gruppe")}</div><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(tag=>`<span class="small">#${esc(String(tag).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div></div></article>`;
+    return `<article class="group-card profile-group-card" data-profile-card="${esc(g.id)}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><span class="gt-card-country-flag" title="${esc(countryInfo(g.country).name)}">${countryFlagSvg(g.country||"DE",true)}</span><button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button><span class="online-dot" aria-hidden="true"></span></div><div class="group-content"><div class="group-title">${esc(g.name||"Gruppe")}</div><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(tag=>`<span class="small">#${esc(String(tag).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div></div></article>`;
   };
   const convertProfileCards=()=>{
     if(!document.body.classList.contains("profile-page"))return;
@@ -2176,14 +2176,27 @@ header,body.dark header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%
 .profile-group-card.gt-adult-image .group-image img,
 .my-group-item.gt-adult-image .my-group-thumb,
 body.gt-adult-detail:not(.gt-age-confirmed) .detail-cover img {
-  filter:blur(19px) brightness(.83) !important;
-  transform:scale(1.10);
+  filter:blur(5px) brightness(.96) !important;
+  transform:scale(1.035);
   transition:filter .25s ease,transform .25s ease;
 }
 /* Mantener las fotos de adultos borrosas en las tarjetas aun después de confirmar. */
 .group-card.gt-adult-image .group-image>div[role="button"],
 .group-card.gt-adult-image .group-image>a {overflow:hidden}
 body.gt-age-confirmed.gt-adult-detail .detail-cover img {filter:none;transform:none}
+
+/* Bandera visible en la tarjeta, sin interferir con la foto ni los votos. */
+#groupsGrid .group-card .gt-card-country-flag,
+.profile-group-card .gt-card-country-flag{
+ position:absolute;right:12px;bottom:8px;z-index:5;
+ display:grid;place-items:center;width:30px;height:30px;
+ border:2px solid white;border-radius:50%;overflow:hidden;
+ background:white;box-shadow:0 2px 7px rgba(0,0,0,.23);pointer-events:none;
+}
+#groupsGrid .group-card .gt-card-country-flag .real-flag,
+.profile-group-card .gt-card-country-flag .real-flag{width:100%;height:100%;border:0;box-shadow:none;border-radius:50%;}
+#groupsGrid .group-card .gt-card-country-flag svg,
+.profile-group-card .gt-card-country-flag svg{width:100%;height:100%;}
 </style>
 <script id="gt-adult-image-blur-script">
 (()=>{
