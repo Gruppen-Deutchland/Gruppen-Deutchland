@@ -1310,7 +1310,7 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
       finally{clearTimeout(timeout)}
       const data=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(data?.error||"Die Gruppendaten konnten nicht geladen werden.");
-      if(!String(data?.name||"").trim())throw new Error("Der Gruppenname konnte nicht aus dem Link gelesen werden.");
+      if(!String(data?.name||"").trim())throw new Error("Der Gruppenname konnte nicht automatisch gelesen werden. Bitte prüfe den Link oder versuche es später erneut.");
       const result={...data,name:String(data.name).trim(),platform:data.platform||groupPlatform(cleanUrl),image_url:String(data.image_url||"").trim()};
       groupMetadataCache.set(cleanUrl,result);
       return result;
@@ -1352,7 +1352,7 @@ function setupProfilePublishing(){
         const metadata=await groupPublishMetadata(link);
         if(version!==previewVersion||inviteInput.value.trim()!==link)return;
         previewName.textContent=metadata.name||"Gruppe";
-        showManualName(false);
+
         const imageUrl=cleanImageUrl(metadata.image_url);
         if(imageUrl){
           previewImage.onload=()=>{if(version===previewVersion){previewImage.style.display="block";previewStatus.textContent=metadata.platform||"Gruppenbild geladen";}};
@@ -1367,24 +1367,36 @@ function setupProfilePublishing(){
         if(version!==previewVersion)return;
         previewImage.style.display="none";
         previewName.textContent="Keine Vorschau verfügbar";
-        previewStatus.textContent="Automatische Erkennung fehlgeschlagen. Bitte Gruppennamen eingeben.";
-        showManualName(true);
+        previewStatus.textContent="Automatische Erkennung nicht verfügbar. Bitte Link prüfen oder später erneut versuchen.";
       }
     };
     inviteInput.addEventListener("input",()=>{clearTimeout(previewTimer);previewVersion++;previewTimer=setTimeout(updatePreview,550);});
     inviteInput.addEventListener("change",()=>{clearTimeout(previewTimer);updatePreview();});
+    // En móviles, pegar desde WhatsApp/Telegram no siempre dispara "input" de inmediato.
+    const scheduleMobilePreview=(delay=180)=>{
+      clearTimeout(previewTimer);
+      previewTimer=setTimeout(updatePreview,delay);
+    };
+    inviteInput.addEventListener("paste",()=>scheduleMobilePreview(180));
+    inviteInput.addEventListener("blur",()=>scheduleMobilePreview(100));
+    inviteInput.addEventListener("keyup",()=>scheduleMobilePreview(450));
+    document.addEventListener("visibilitychange",()=>{
+      if(!document.hidden&&form.closest('.modal.active')&&validGroupInvite(inviteInput.value.trim()))scheduleMobilePreview(220);
+    });
+    window.addEventListener("pageshow",()=>{
+      if(form.closest('.modal.active')&&validGroupInvite(inviteInput.value.trim()))scheduleMobilePreview(220);
+    });
+    // Cuando se abre el formulario con un enlace ya pegado, cargar los metadatos.
+    const addModal=document.getElementById('addModal');
+    if(addModal){
+      new MutationObserver(()=>{
+        if(addModal.classList.contains('active')&&validGroupInvite(inviteInput.value.trim()))scheduleMobilePreview(120);
+      }).observe(addModal,{attributes:true,attributeFilter:['class']});
+    }
     form.addEventListener("reset",()=>{previewVersion++;clearTimeout(previewTimer);clearPreview();});
   }
-  // Si el proveedor bloquea los metadatos, pedir el nombre real en vez de bloquear la publicación.
-  const manualNameField=document.createElement("div");
-  manualNameField.className="form-group";
-  manualNameField.id="manualGroupNameField";
-  manualNameField.hidden=true;
-  manualNameField.innerHTML='<label for="manualGroupName">Gruppenname * (wenn automatische Erkennung nicht möglich ist)</label><input id="manualGroupName" name="manual_group_name" maxlength="80" placeholder="Name deiner Gruppe" autocomplete="off"><p class="small">WhatsApp/Telegram erlaubt derzeit keine automatische Vorschau. Du kannst trotzdem veröffentlichen.</p>';
-  inviteInput.closest(".form-group").insertAdjacentElement("afterend",manualNameField);
-  const manualNameInput=manualNameField.querySelector("input");
-  const showManualName=show=>{manualNameField.hidden=!show;manualNameInput.required=show;};
-  inviteInput.addEventListener("input",()=>showManualName(false));
+  // Der Gruppenname wird ausschließlich automatisch aus dem Einladungslink gelesen.
+  // Keine manuelle Namenseingabe und keine erfundenen Ersatznamen.
   const addModalSubtitle=$("#addModal .modal-sub");
   if(addModalSubtitle)addModalSubtitle.textContent="Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht. Du kannst auch anonym veröffentlichen – ein Konto ist nicht erforderlich.";
   ["name","platform"].forEach(field=>form.querySelector(`[name="${field}"]`)?.closest(".form-group")?.remove());
@@ -1406,13 +1418,7 @@ function setupProfilePublishing(){
     notice.textContent="";notice.className="notice";
     button.disabled=true;button.textContent="Gruppendaten werden geladen…";
     try{
-      let meta;
-      try{meta=await groupPublishMetadata(inviteUrl);}catch(metadataError){
-        if(!validGroupInvite(inviteUrl))throw metadataError;
-        const manualName=String(fd.get("manual_group_name")||"").trim();
-        if(!manualName){showManualName(true);throw new Error("Bitte gib den Gruppennamen ein, da die automatische Erkennung nicht verfügbar ist.");}
-        meta={name:manualName,platform:groupPlatform(inviteUrl),image_url:"",description:""};
-      }
+      const meta=await groupPublishMetadata(inviteUrl);
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
       button.textContent="Gruppe wird gespeichert…";
@@ -1425,7 +1431,7 @@ function setupProfilePublishing(){
       const {error}=await db.from("groups").insert(row);
       if(error)throw error;
       rememberSubmittedGroup({id:groupId,invite_url:inviteUrl,name:row.name,country:row.country});
-      e.target.reset();showManualName(false);showVotePromotion({id:groupId,name:row.name});
+      e.target.reset();showVotePromotion({id:groupId,name:row.name});
     }catch(error){notice.textContent=`Fehler: ${error.message||"Bitte prüfe den Gruppenlink."}`;notice.className="notice show err"}
     finally{button.disabled=false;button.textContent=old}
   },true);
