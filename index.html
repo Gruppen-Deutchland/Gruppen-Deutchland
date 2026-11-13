@@ -891,7 +891,7 @@ header .nav.mobile-menu-open .nav-right .add-btn{
 </div>
 
 </footer>
-<div class="modal" id="addModal"><div class="modal-box"><button class="close" data-close="addModal">×</button><h2>➕ Gruppe hinzufügen</h2><p class="modal-sub">Füge nur den WhatsApp- oder Telegram-Link ein. Nach Prüfung und Freigabe erscheint die Gruppe im Verzeichnis.</p><div class="notice" id="addNotice"></div><form id="addForm"><div class="form-group"><label for="groupInviteOnly">WhatsApp- oder Telegram-Link *</label><input id="groupInviteOnly" name="invite_url" type="url" required autocomplete="off" placeholder="https://chat.whatsapp.com/... oder https://t.me/..."></div><button class="submit" type="submit">Gruppe zur Prüfung senden</button></form></div></div>
+<div class="modal" id="addModal"><div class="modal-box"><button class="close" data-close="addModal">×</button><h2>➕ Gruppe hinzufügen</h2><p class="modal-sub">Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht.</p><div class="notice" id="addNotice"></div><form id="addForm"><div class="form-group"><label>Gruppenname *</label><input name="name" maxlength="80" required placeholder="z. B. Deutsche Community"></div><div class="form-row"><div class="form-group"><label>Plattform *</label><select name="platform" required><option>WhatsApp</option><option>Telegram</option></select></div><div class="form-group"><label>Land *</label><div style="display:flex;align-items:center;gap:9px"><span id="countrySelectFlag"></span><select name="country" id="countrySelect" required><option value="DE">Deutschland</option><option value="US">USA</option><option value="ES">Spanien</option><option value="AU">Australien</option><option value="GB">England</option></select></div></div></div><div class="form-group"><label>Kategorie *</label><select name="category" required><option value="Adult">🔞 Adult</option><option value="Alle">✨ Alle</option><option value="Singles">💘 Singles</option><option value="Freundschaft">🤝 Freundschaft</option><option value="Gaming">🎮 Gaming</option><option value="Freizeit">🎉 Freizeit</option><option value="Reisen">🌍 Reisen</option><option value="Musik">🎵 Musik</option><option value="Lernen">📚 Lernen</option><option value="Jobs">💼 Jobs</option><option value="Community">💬 Community</option><option value="Andere">📁 Andere</option></select></div><div class="form-group"><label>Einladungslink *</label><input name="invite_url" type="url" required placeholder="https://chat.whatsapp.com/..."></div><div class="form-group"><label>Beschreibung</label><textarea name="description" maxlength="500" placeholder="Beschreibe deine Gruppe..."></textarea></div><div class="form-group"><label>Tags</label><input name="tags" placeholder="chat, deutschland, freunde"></div><button class="submit" type="submit">Anfrage senden</button></form></div></div>
 <div class="modal" id="authModal"><div class="modal-box auth-modal-box"><button class="close" data-close="authModal">×</button><h2>👤 Dein GroupTreff-Konto</h2><p class="modal-sub">Ein Konto ist optional. Melde dich an, wenn du deine eingereichten Gruppen später verwalten möchtest.</p><div class="auth-tabs"><button class="auth-tab active" id="loginTab" type="button">Login</button><button class="auth-tab" id="registerTab" type="button">Sign up</button></div><div class="notice" id="authNotice"></div><form id="loginForm"><div class="form-group"><label>E-Mail *</label><input name="email" type="email" autocomplete="email" required placeholder="name@email.de"></div><div class="form-group"><label>Passwort *</label><input name="password" type="password" autocomplete="current-password" required placeholder="Dein Passwort"></div><button class="submit" type="submit">Login</button></form><form id="registerForm" style="display:none"><div class="form-group"><label>Benutzername *</label><input name="username" minlength="2" maxlength="30" required placeholder="z. B. MaxBerlin"></div><div class="form-group"><label>E-Mail *</label><input name="email" type="email" autocomplete="email" required placeholder="name@email.de"></div><div class="form-row"><div class="form-group"><label>Passwort *</label><input name="password" type="password" minlength="6" autocomplete="new-password" required></div><div class="form-group"><label>Wiederholen *</label><input name="password_confirm" type="password" minlength="6" autocomplete="new-password" required></div></div><button class="submit" type="submit">Sign up</button></form></div></div>
 <div class="modal" id="myGroupsModal"><div class="modal-box my-groups-box"><button class="close" data-close="myGroupsModal">×</button><div class="profile-identity"><div class="profile-avatar-wrap"><div class="profile-avatar" id="profileAvatar">👤</div><label class="profile-avatar-edit" for="profileAvatarInput" title="Profilfoto ändern">✎</label><input id="profileAvatarInput" type="file" accept="image/*" hidden></div><div><h2>👤 Mein Profil</h2><p class="modal-sub" id="profileEmail"></p></div></div><div class="my-groups-head"><div><p class="modal-sub">Hier siehst du deine veröffentlichten Gruppen und kannst abgelaufene Links aktualisieren.</p></div><button class="mini-green-btn" id="refreshMyGroups" type="button">↻ Aktualisieren</button></div><div class="notice" id="myGroupsNotice"></div><div class="my-groups-list" id="myGroupsList"><div class="my-group-empty">Deine Gruppen werden geladen…</div></div></div></div>
 <div class="modal" id="groupPreviewModal" role="dialog" aria-modal="true" aria-labelledby="previewTitle"><div class="modal-box group-preview-box"><button class="close" type="button" data-close="groupPreviewModal" aria-label="Schließen">×</button><div class="preview-votes" id="previewVotes">+0</div><div class="preview-avatar"><img id="previewImage" alt="Gruppenbild"><span id="previewFallback">💬</span><i class="preview-online" aria-hidden="true"></i></div><h2 id="previewTitle">Gruppe</h2><button class="preview-next" id="previewNext" type="button">Jetzt dem Chat beitreten</button></div></div>
@@ -1375,46 +1375,61 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
 function setupProfilePublishing(){
   const form=$("#addForm");
   const inviteInput=form.querySelector('[name="invite_url"]');
-  const subtitle=$("#addModal .modal-sub");
-  if(subtitle)subtitle.textContent="Nur den Gruppenlink einfügen. Nach Freigabe durch einen Administrator wird die Gruppe veröffentlicht.";
+  const inviteLabel=inviteInput?.closest(".form-group")?.querySelector("label");
+  if(inviteLabel)inviteLabel.textContent="WhatsApp- oder Telegram-Link *";
+  if(inviteInput)inviteInput.placeholder="https://chat.whatsapp.com/... oder https://t.me/...";
+  // Vista previa automática desactivada. Los demás campos y el envío permanecen intactos.
+  // Der Gruppenname wird ausschließlich automatisch aus dem Einladungslink gelesen.
+  // Keine manuelle Namenseingabe und keine erfundenen Ersatznamen.
+  const addModalSubtitle=$("#addModal .modal-sub");
+  if(addModalSubtitle)addModalSubtitle.textContent="Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht. Du kannst auch anonym veröffentlichen – ein Konto ist nicht erforderlich.";
+  ["name","platform"].forEach(field=>form.querySelector(`[name="${field}"]`)?.closest(".form-group")?.remove());
+  form.querySelector('[name="description"]')?.closest(".form-group")?.querySelector("label")?.replaceChildren("Beschreibung (optional)");
+  const tagsInput=form.querySelector('[name="tags"]');
+  if(tagsInput){tagsInput.closest(".form-group")?.querySelector("label")?.replaceChildren("Hashtags (optional)");tagsInput.placeholder="#chat, #deutschland, #freunde";}
+  if(!form.querySelector("[name=age_restriction]")){
+    const age=document.createElement("div");age.className="form-group";age.innerHTML='<label>Altersfreigabe *</label><select name="age_restriction" required><option value="all">Für alle Altersgruppen</option><option value="18+">Nur für Erwachsene (18+)</option></select>';
+    form.querySelector("[name=invite_url]").closest(".form-group").insertAdjacentElement("beforebegin",age);
+  }
   $("#myGroupsModal h2").textContent="👤 Mein Profil";
   $("#myGroupsModal .modal-sub").textContent="Hier siehst du deine veröffentlichten Gruppen und kannst abgelaufene Links aktualisieren.";
   new MutationObserver(()=>document.querySelectorAll("[data-own-edit]").forEach(b=>{if(b.textContent!=="🔗 Link aktualisieren")b.textContent="🔗 Link aktualisieren"})).observe($("#myGroupsList"),{childList:true,subtree:true});
   document.addEventListener("submit",async e=>{
-    if(e.target.id!=="addForm")return;
+    if(e.target.id!=="addForm"||!db)return;
     e.preventDefault();e.stopImmediatePropagation();
-    const notice=$("#addNotice"),button=e.target.querySelector(".submit"),old=button.textContent;
-    const inviteUrl=normalizeGroupInvite(inviteInput.value);
+    const fd=new FormData(e.target),notice=$("#addNotice"),button=e.target.querySelector(".submit"),old=button.textContent;
+    const inviteUrl=normalizeGroupInvite(fd.get("invite_url"));
     notice.textContent="";notice.className="notice";
-    if(!validGroupInvite(inviteUrl)){notice.textContent="Bitte füge einen gültigen WhatsApp- oder Telegram-Link ein.";notice.className="notice show err";return}
-    if(!db){notice.textContent="Verbindung zur Datenbank nicht verfügbar.";notice.className="notice show err";return}
-    const platform=groupPlatform(inviteUrl);
-    const name=platform==="Telegram"?"Telegram Gruppe":"WhatsApp Gruppe";
-    button.disabled=true;button.textContent="Gruppe wird gespeichert…";
+    button.disabled=true;button.textContent="Gruppendaten werden geladen…";
     try{
+      const meta=await groupPublishMetadata(inviteUrl);
+      const description=String(fd.get("description")||"").trim()||meta.description||"";
+      const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
+      button.textContent="Gruppe wird gespeichert…";
+      let imageUrl=cleanImageUrl(meta.image_url);
+      if(imageUrl) imageUrl=await persistRemoteGroupImage(imageUrl);
       const groupId=crypto.randomUUID();
-      const row={id:groupId,name,platform,country:"DE",category:"Community",age_restriction:"all",invite_url:inviteUrl,image_url:"",description:"",tags:[],status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
+      const row={id:groupId,name:meta.name.slice(0,80),platform:meta.platform||"WhatsApp",country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:imageUrl,description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
+      /* Las filas pendientes no se pueden leer públicamente. Por eso no usamos
+         .select() después de insertar: esa lectura activaba la política RLS. */
       const {error}=await db.from("groups").insert(row);
       if(error)throw error;
       rememberSubmittedGroup({id:groupId,invite_url:inviteUrl,name:row.name,country:row.country});
-      e.target.reset();
-      notice.textContent="✅ Gruppe eingereicht! Nach Freigabe wird sie im Verzeichnis angezeigt.";
-      notice.className="notice show ok";
-    }catch(error){notice.textContent=`Fehler beim Speichern: ${error.message||"Bitte versuche es erneut."}`;notice.className="notice show err"}
+      e.target.reset();showVotePromotion({id:groupId,name:row.name});
+    }catch(error){notice.textContent=`Fehler: ${error.message||"Bitte prüfe den Gruppenlink."}`;notice.className="notice show err"}
     finally{button.disabled=false;button.textContent=old}
   },true);
   $("#myGroupsList").addEventListener("click",async e=>{
     const edit=e.target.closest("[data-own-edit]");if(!edit||!db||!currentUser)return;
     e.preventDefault();e.stopImmediatePropagation();
-    const id=edit.dataset.ownEdit,{data:oldGroup}=await db.from("groups").select("invite_url").eq("id",id).eq("user_id",currentUser.id).single();
-    const next=prompt("Neuen WhatsApp- oder Telegram-Link einfügen:",oldGroup?.invite_url||"");if(!next?.trim())return;
-    const inviteUrl=normalizeGroupInvite(next);
-    if(!validGroupInvite(inviteUrl)){showNotice("myGroupsNotice","Ungültiger Gruppenlink.");return}
-    try{
-      const {error}=await db.from("groups").update({invite_url:inviteUrl,platform:groupPlatform(inviteUrl),status:"pending"}).eq("id",id).eq("user_id",currentUser.id);
-      if(error)throw error;
-      showNotice("myGroupsNotice","✅ Link aktualisiert. Die Gruppe wird erneut geprüft.","ok");await loadMyGroups();await loadGroups();
-    }catch(error){showNotice("myGroupsNotice",error.message||"Der Link konnte nicht aktualisiert werden.")}
+    const id=edit.dataset.ownEdit,{data:oldGroup}=await db.from("groups").select("invite_url,image_url").eq("id",id).eq("user_id",currentUser.id).single();
+    const inviteUrl=prompt("Neuen WhatsApp- oder Telegram-Link einfügen:",oldGroup?.invite_url||"");if(!inviteUrl?.trim())return;
+    try{const meta=await groupPublishMetadata(inviteUrl.trim());
+      /* Nunca borrar la imagen existente solo porque WhatsApp no la devuelve. */
+      let imageUrl=cleanImageUrl(meta.image_url);
+      if(imageUrl)imageUrl=await persistRemoteGroupImage(imageUrl);
+      if(!imageUrl)imageUrl=cleanImageUrl(oldGroup?.image_url);
+      const {error}=await db.from("groups").update({invite_url:inviteUrl.trim(),name:meta.name.slice(0,80),image_url:imageUrl,description:meta.description||"",platform:meta.platform,status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)throw error;showNotice("myGroupsNotice","✅ Link und Gruppendaten wurden aktualisiert. Die Gruppe wird erneut geprüft.","ok");await loadMyGroups();await loadGroups()}catch(error){showNotice("myGroupsNotice",error.message||"Der Link konnte nicht aktualisiert werden.")}
   },true);
   const avatarBox=$("#profileAvatar"),avatarInput=$("#profileAvatarInput"),emailBox=$("#profileEmail");
   const renderAvatar=()=>{const avatar=currentUser?.user_metadata?.avatar_data||"";if(avatarBox)avatarBox.innerHTML=avatar?`<img src="${esc(avatar)}" alt="Profilfoto">`:`👤`;document.querySelectorAll(".gt-profile-avatar").forEach(box=>box.innerHTML=avatar?`<img src="${esc(avatar)}" alt="Profilfoto">`:`👤`);if(emailBox)emailBox.textContent=""};
@@ -1802,8 +1817,8 @@ loadGroups();
     if(!next?.trim())return;
     try{
       const normalized=normalizeGroupInvite(next.trim());
-      if(!validGroupInvite(normalized))throw new Error("Ungültiger Gruppenlink.");
-      const {error}=await db.from("groups").update({invite_url:normalized,platform:groupPlatform(normalized),status:"pending"}).eq("id",update.dataset.profileUpdate).eq("user_id",currentUser.id);
+      const meta=await groupPublishMetadata(normalized);
+      const {error}=await db.from("groups").update({invite_url:normalized,name:meta.name.slice(0,80),image_url:(meta.image_url?await persistRemoteGroupImage(meta.image_url):"")||cleanImageUrl(group?.image_url),description:meta.description||group?.description||"",platform:meta.platform,status:"pending"}).eq("id",update.dataset.profileUpdate).eq("user_id",currentUser.id);
       if(error)throw error;
       showNotice("myGroupsNotice","✅ Link aktualisiert. Die Gruppe wird erneut geprüft.","ok");
       await loadMyGroups();await loadGroups();
