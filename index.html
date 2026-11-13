@@ -815,6 +815,35 @@ header .nav.mobile-menu-open .nav-right .add-btn{
 .profile-group-card .group-card-footer .age-badge {
   display:inline-flex!important;
 }
+
+/* Perfil: misma cuadrícula y tarjetas que el directorio, con gestión del enlace */
+.profile-page #myGroupsList.profile-cards-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;max-height:none!important;overflow:visible!important;padding:8px 0!important;align-items:start}
+.profile-page .profile-group-card{width:100%;height:330px;min-width:0}
+.profile-page .profile-group-card .group-content{height:auto;flex:1}
+.profile-page .profile-group-card .platform-card-icon{font-size:17px;color:white;font-weight:900}
+.profile-update-link{display:block;width:100%;margin:6px auto 0;border:1px solid #16a34a;border-radius:7px;background:#fff;color:#15803d;font-weight:800;font-size:12px;padding:6px 7px;position:relative;z-index:6}
+.profile-update-link:hover{background:#dcfce7}
+@media(max-width:1050px){.profile-page #myGroupsList.profile-cards-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.profile-page #myGroupsList.profile-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.profile-page .profile-group-card{height:320px}}
+@media(max-width:420px){.profile-page .profile-group-card{height:302px}.profile-update-link{font-size:11px;padding:6px 3px}}
+</style>
+<style id="gt-profile-reference-match">
+/* Identidad y tarjetas del perfil alineadas con el directorio principal. */
+.nav .logo-image,.profile-page .nav .logo-image{filter:none!important}
+.profile-page #myGroupsList.profile-cards-grid{max-width:1200px;margin:0 auto;grid-template-columns:repeat(4,minmax(0,1fr))}
+.profile-page .profile-group-card{height:330px;overflow:hidden}
+.profile-page .profile-group-card .group-image{flex-shrink:0}
+.profile-page .profile-group-card .group-content{min-height:0;height:156px;padding-bottom:9px}
+.profile-page .profile-group-card .group-title{color:#101820}
+.profile-page .profile-group-card .card-description{display:-webkit-box;min-height:38px;margin:0 auto 4px;overflow:hidden;color:#75837e;font-size:13px;line-height:1.35;text-align:center;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.profile-page .profile-group-card .platform-card-icon{display:grid!important;place-items:center;position:absolute;left:11px;bottom:7px;top:auto;right:auto;width:28px;height:28px;border-radius:50%;background:#25d366;border:2px solid white;color:white!important;z-index:4;font-size:15px}
+.profile-page .profile-group-card .platform-card-icon.telegram{background:#229ed9}
+.profile-page .profile-group-card .gt-card-country-flag{z-index:4}
+.profile-page .profile-group-card .profile-update-link{position:absolute;right:6px;bottom:5px;width:auto;max-width:125px;margin:0;padding:4px 7px;font-size:10px;background:#fff;border:1px solid #16a34a;border-radius:8px;box-shadow:0 2px 6px #0002}
+.profile-page .profile-group-card:has(.profile-update-link) .group-card-footer{padding-right:118px}
+@media(max-width:1050px){.profile-page #myGroupsList.profile-cards-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.profile-page #myGroupsList.profile-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.profile-page .profile-group-card{height:320px}}
+@media(max-width:420px){.profile-page .profile-group-card{height:302px}.profile-page .profile-group-card .profile-update-link{font-size:9px;padding:4px}}
 </style>
 </head>
 <body>
@@ -1085,7 +1114,7 @@ $("#openAdd")?.addEventListener("click",requestAddGroup);$("#openAdd2")?.addEven
 $("#loginForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){showNotice("authNotice","Supabase ist nicht konfiguriert.");return}const form=e.currentTarget,fd=new FormData(form),btn=form.querySelector("button[type=submit]"),old=btn.textContent;btn.disabled=true;btn.textContent="Anmeldung…";const{data,error}=await db.auth.signInWithPassword({email:String(fd.get("email")).trim(),password:String(fd.get("password"))});btn.disabled=false;btn.textContent=old;if(error){showNotice("authNotice",`Anmeldung fehlgeschlagen: ${error.message}`);return}currentUser=data.user;updateAuthUI();form.reset();closeModal("authModal")});
 $("#registerForm").addEventListener("submit",async e=>{e.preventDefault();if(!db){showNotice("authNotice","Supabase ist nicht konfiguriert.");return}const form=e.currentTarget,fd=new FormData(form),password=String(fd.get("password")),confirm=String(fd.get("password_confirm")),username=String(fd.get("username")).trim();if(password!==confirm){showNotice("authNotice","Die Passwörter stimmen nicht überein.");return}const btn=form.querySelector("button[type=submit]"),old=btn.textContent;btn.disabled=true;btn.textContent="Registrierung…";const{data,error}=await db.auth.signUp({email:String(fd.get("email")).trim(),password,options:{data:{username}}});btn.disabled=false;btn.textContent=old;if(error){showNotice("authNotice",`Registrierung fehlgeschlagen: ${error.message}`);return}currentUser=data.session?.user||null;updateAuthUI();form.reset();if(currentUser){closeModal("authModal");showNotice("addNotice","✅ Konto erstellt. Du kannst jetzt deine Gruppe einreichen.","ok");openModal("addModal")}else{chooseAuthTab("login");showNotice("authNotice","✅ Konto erstellt. Bitte bestätige die E-Mail und melde dich danach an.","ok")}});
 $("#logoutBtn")?.addEventListener("click",async()=>{await db?.auth.signOut();currentUser=null;updateAuthUI();closeModal("myGroupsModal")});
-async function loadMyGroups(){const box=$("#myGroupsList");if(!db||!currentUser){box.innerHTML='<div class="my-group-empty">Bitte melde dich erneut an.</div>';return}box.innerHTML='<div class="my-group-empty">Deine Gruppen werden geladen…</div>';try{const result=await Promise.race([db.from("groups").select("id,name,description,category,platform,country,status,image_url,invite_url,tags,created_at").eq("user_id",currentUser.id).order("created_at",{ascending:false}),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Zeitüberschreitung beim Laden des Profils.")),12000))]);const{data,error}=result;if(error)throw error;clearNotice("myGroupsNotice");const rows=data||[];if(!rows.length){box.innerHTML='<div class="my-group-empty">Du hast noch keine Gruppe eingereicht.<br><br><button class="mini-green-btn" type="button" data-new-own-group>＋ Erste Gruppe hinzufügen</button></div>';return}const labels={pending:"In Prüfung",approved:"Veröffentlicht",rejected:"Abgelehnt"};box.innerHTML=rows.map(g=>`<article class="my-group-item">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")} · <span class="status-pill status-${esc(g.status||"pending")}">${esc(labels[g.status]||g.status||"In Prüfung")}</span></div><p class="small" style="margin-top:6px">${esc(g.description||"Keine Beschreibung")}</p></div><div class="my-group-actions"><button class="edit-own-group" data-own-edit="${esc(g.id)}" type="button">✏️ Bearbeiten</button><button class="delete-own-group" data-own-delete="${esc(g.id)}" type="button">🗑️ Löschen</button></div></article>`).join("")}catch(error){box.innerHTML='<div class="my-group-empty">Deine Gruppen konnten nicht geladen werden. Bitte aktualisiere die Seite oder versuche es erneut.</div>';showNotice("myGroupsNotice",error?.message||"Profil konnte nicht geladen werden.")}}
+async function loadMyGroups(){const box=$("#myGroupsList");if(!db||!currentUser){box.innerHTML='<div class="my-group-empty">Bitte melde dich erneut an.</div>';return}box.innerHTML='<div class="my-group-empty">Deine Gruppen werden geladen…</div>';try{const result=await Promise.race([db.from("groups").select("id,name,description,category,platform,country,status,image_url,invite_url,tags,created_at,votes_count,link_status").eq("user_id",currentUser.id).order("created_at",{ascending:false}),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Zeitüberschreitung beim Laden des Profils.")),12000))]);const{data,error}=result;if(error)throw error;clearNotice("myGroupsNotice");const rows=data||[];if(!rows.length){box.innerHTML='<div class="my-group-empty">Du hast noch keine Gruppe eingereicht.<br><br><button class="mini-green-btn" type="button" data-new-own-group>＋ Erste Gruppe hinzufügen</button></div>';return}const labels={pending:"In Prüfung",approved:"Veröffentlicht",rejected:"Abgelehnt"};box.innerHTML=rows.map(g=>`<article class="my-group-item" data-group-json="${esc(JSON.stringify(g))}">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")} · <span class="status-pill status-${esc(g.status||"pending")}">${esc(labels[g.status]||g.status||"In Prüfung")}</span></div><p class="small" style="margin-top:6px">${esc(g.description||"Keine Beschreibung")}</p></div><div class="my-group-actions"><button class="edit-own-group" data-own-edit="${esc(g.id)}" type="button">✏️ Bearbeiten</button><button class="delete-own-group" data-own-delete="${esc(g.id)}" type="button">🗑️ Löschen</button></div></article>`).join("")}catch(error){box.innerHTML='<div class="my-group-empty">Deine Gruppen konnten nicht geladen werden. Bitte aktualisiere die Seite oder versuche es erneut.</div>';showNotice("myGroupsNotice",error?.message||"Profil konnte nicht geladen werden.")}}
 $("#openMyGroups").addEventListener("click",async()=>{if(!currentUser)return;openModal("myGroupsModal");await loadMyGroups()});$("#refreshMyGroups").addEventListener("click",loadMyGroups);$("#myGroupsList").addEventListener("click",async e=>{if(e.target.closest("[data-new-own-group]")){closeModal("myGroupsModal");requestAddGroup();return}const edit=e.target.closest("[data-own-edit]");if(edit){const id=edit.dataset.ownEdit,{data}=await db.from("groups").select("name,description").eq("id",id).eq("user_id",currentUser.id).single();if(!data)return;const name=prompt("Gruppenname bearbeiten:",data.name||"");if(name===null||!name.trim())return;const description=prompt("Beschreibung bearbeiten:",data.description||"");if(description===null)return;const{error}=await db.from("groups").update({name:name.trim(),description:description.trim(),status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)showNotice("myGroupsNotice",error.message);else{showNotice("myGroupsNotice","✅ Gruppe gespeichert und erneut zur Prüfung gesendet.","ok");await loadMyGroups();await loadGroups()}return}const del=e.target.closest("[data-own-delete]");if(del){if(!confirm("Möchtest du diese Gruppe wirklich löschen?"))return;const{error}=await db.from("groups").delete().eq("id",del.dataset.ownDelete).eq("user_id",currentUser.id);if(error)showNotice("myGroupsNotice",error.message);else{showNotice("myGroupsNotice","Gruppe wurde gelöscht.","ok");await loadMyGroups();await loadGroups()}}});
 /* Consulta directa con cancelación: evita que el perfil quede cargando sin fin. */
 loadMyGroups=async function(){
@@ -1107,7 +1136,7 @@ loadMyGroups=async function(){
     const rows=Array.isArray(data)?data:[];
     if(!rows.length){box.innerHTML='<div class="my-group-empty">Du hast noch keine Gruppe eingereicht.<br><br><button class="mini-green-btn" type="button" data-new-own-group>＋ Erste Gruppe hinzufügen</button></div>';return}
     const labels={pending:"In Prüfung",approved:"Veröffentlicht",rejected:"Abgelehnt"};
-    box.innerHTML=rows.map(g=>`<article class="my-group-item">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")} · <span class="status-pill status-${esc(g.status||"pending")}">${esc(labels[g.status]||g.status||"In Prüfung")}</span></div><p class="small" style="margin-top:6px">${esc(g.description||"Keine Beschreibung")}</p></div><div class="my-group-actions"><button class="edit-own-group" data-own-edit="${esc(g.id)}" type="button">🔗 Link aktualisieren</button><button class="delete-own-group" data-own-delete="${esc(g.id)}" type="button">🗑️ Löschen</button></div></article>`).join("");
+    box.innerHTML=rows.map(g=>`<article class="my-group-item" data-group-json="${esc(JSON.stringify(g))}">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")} · <span class="status-pill status-${esc(g.status||"pending")}">${esc(labels[g.status]||g.status||"In Prüfung")}</span></div><p class="small" style="margin-top:6px">${esc(g.description||"Keine Beschreibung")}</p></div><div class="my-group-actions"><button class="edit-own-group" data-own-edit="${esc(g.id)}" type="button">🔗 Link aktualisieren</button><button class="delete-own-group" data-own-delete="${esc(g.id)}" type="button">🗑️ Löschen</button></div></article>`).join("");
   }catch(error){
     const message=error?.name==="AbortError"?"Zeitüberschreitung beim Laden des Profils.":(error?.message||"Profil konnte nicht geladen werden.");
     box.innerHTML='<div class="my-group-empty">Deine Gruppen konnten nicht geladen werden. Bitte versuche es erneut.</div>';
@@ -1130,7 +1159,7 @@ render=function(){
     let date="";try{date=g.created_at?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(g.created_at)):""}catch{}
     const platform=String(g.platform||"WhatsApp");
     const platformIcon=platform.toLowerCase()==="telegram"?`<svg viewBox="0 0 48 48" aria-label="Telegram"><circle cx="24" cy="24" r="24" fill="#229ED9"/><path fill="#fff" d="M35.8 13.4 31.9 34c-.3 1.5-1.1 1.9-2.3 1.2l-6-4.4-2.9 2.8c-.3.3-.6.6-1.2.6l.4-6.1 11.1-10c.5-.4-.1-.7-.7-.3L16.6 26.4l-5.9-1.8c-1.3-.4-1.3-1.3.3-1.9l23.1-8.9c1.1-.4 2 .3 1.7 1.6z"/></svg>`:`<svg viewBox="0 0 48 48" aria-label="WhatsApp"><circle cx="24" cy="24" r="24" fill="#25D366"/><path fill="#fff" d="M35 12.9A15.4 15.4 0 0 0 10.8 31.5L8.6 39.6l8.3-2.2A15.4 15.4 0 0 0 35 12.9zm-11 22.9c-2.4 0-4.8-.7-6.8-1.9l-.5-.3-4.9 1.3 1.3-4.8-.3-.5a11.8 11.8 0 1 1 11.2 6.2z"/></svg>`;
-    return `<article class="group-card ${g.link_status==="expired"?"group-expired":""}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div>${owner?`<div class="owner-badge" title="${esc(owner)}"><span class="owner-dot">●</span><span>${esc(owner)}</span></div>`:""}<button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>${g.link_status==="expired"?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div><div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name)} – Gruppenseite öffnen">${esc(g.name)}</a><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(t=>`<span class="small">#${esc(String(t).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div></div></article>`;
+    return `<article class="group-card ${g.link_status==="expired"?"group-expired":""}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><span class="gt-card-country-flag" title="${esc(countryInfo(g.country).name)}">${countryFlagSvg(g.country||"DE",true)}</span>${owner?`<div class="owner-badge" title="${esc(owner)}"><span class="owner-dot">●</span><span>${esc(owner)}</span></div>`:""}<button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>${g.link_status==="expired"?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div><div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name)} – Gruppenseite öffnen">${esc(g.name)}</a><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(t=>`<span class="small">#${esc(String(t).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div>${owner?`<button type="button" class="profile-update-link" data-profile-update="${esc(g.id)}">🔗 Link aktualisieren</button>`:""}</div></article>`;
   }).join(""):`<div class="empty"><h3>😕 Keine Gruppen gefunden</h3><p>Versuche einen anderen Suchbegriff oder Filter.</p></div>`;
   document.querySelectorAll(".group-image img").forEach(img=>img.addEventListener("error",()=>{img.onerror=null;img.removeAttribute("src");img.style.display="none";if(img.nextElementSibling)img.nextElementSibling.style.display="grid"},{once:true}));
   $("#pagination").innerHTML=pages>1?Array.from({length:pages},(_,i)=>`<button class="page-btn ${i+1===state.page?"active":""}" data-page="${i+1}">${i+1}</button>`).join(""):"";
@@ -1294,23 +1323,29 @@ async function persistRemoteGroupImage(imageUrl){
 }
 
 const groupMetadataCache=new Map();
-function validGroupInvite(url){return /^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(url)}
+function normalizeGroupInvite(value){
+  const text=String(value||'').trim();
+  const found=text.match(/(?:https?:\/\/)?\/?(?:www\.)?(?:chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\/[^\s<>"']+/i);
+  if(!found)return text;
+  return 'https://'+found[0].replace(/^\/+/, '').replace(/^https?:\/\//i,'').replace(/^www\./i,'');
+}
+function validGroupInvite(url){return /^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(normalizeGroupInvite(url))}
 function groupPlatform(url){return /t\.me\//i.test(url)?"Telegram":"WhatsApp"}
 async function groupPublishMetadata(inviteUrl,{retry=true}={}){
-  const cleanUrl=String(inviteUrl||"").trim();
+  const cleanUrl=normalizeGroupInvite(inviteUrl);
   if(!validGroupInvite(cleanUrl))throw new Error("Bitte füge einen gültigen WhatsApp- oder Telegram-Einladungslink ein.");
   if(groupMetadataCache.has(cleanUrl))return groupMetadataCache.get(cleanUrl);
   let lastError;
   for(let attempt=0;attempt<(retry?2:1);attempt++){
     try{
       const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),12000);
+      const timeout=setTimeout(()=>controller.abort(),25000);
       let response;
       try{response=await fetch(`${GROUPTREFF_URL}g/metadata`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({invite_url:cleanUrl}),signal:controller.signal,cache:"no-store"});}
       finally{clearTimeout(timeout)}
       const data=await response.json().catch(()=>({}));
-      if(!response.ok)throw new Error(data?.error||"Die Gruppendaten konnten nicht geladen werden.");
-      if(!String(data?.name||"").trim())throw new Error("Der Gruppenname konnte nicht aus dem Link gelesen werden.");
+      if(!response.ok)throw new Error(`HTTP ${response.status}: ${String(data?.error||data?.message||response.statusText||"Error del servidor").slice(0,120)}`);
+      if(!String(data?.name||"").trim())throw new Error("Der Gruppenname konnte nicht automatisch gelesen werden. Bitte prüfe den Link oder versuche es später erneut.");
       const result={...data,name:String(data.name).trim(),platform:data.platform||groupPlatform(cleanUrl),image_url:String(data.image_url||"").trim()};
       groupMetadataCache.set(cleanUrl,result);
       return result;
@@ -1339,26 +1374,26 @@ function setupProfilePublishing(){
     const previewStatus=preview.querySelector(".group-link-preview-status");
     const clearPreview=()=>{preview.hidden=true;previewImage.removeAttribute("src");previewName.textContent="";previewStatus.textContent="";};
     const updatePreview=async()=>{
-      const link=inviteInput.value.trim();
+      const link=normalizeGroupInvite(inviteInput.value);
       const version=++previewVersion;
       if(!/^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(link)){
         clearPreview();return;
       }
       preview.hidden=false;
       previewName.textContent="Gruppenvorschau";
-      previewStatus.textContent="Gruppendaten werden geladen…";
+      previewStatus.textContent="Diagnóstico M2 · Consultando servidor…";
       previewImage.style.display="none";
       try{
         const metadata=await groupPublishMetadata(link);
-        if(version!==previewVersion||inviteInput.value.trim()!==link)return;
-        previewName.textContent=metadata.name||"Gruppe";
-        showManualName(false);
+        if(version!==previewVersion||normalizeGroupInvite(inviteInput.value)!==link)return;
+        previewName.textContent=metadata.name;
+
         const imageUrl=cleanImageUrl(metadata.image_url);
         if(imageUrl){
           previewImage.onload=()=>{if(version===previewVersion){previewImage.style.display="block";previewStatus.textContent=metadata.platform||"Gruppenbild geladen";}};
-          previewImage.onerror=()=>{if(version===previewVersion){previewImage.style.display="none";previewStatus.textContent="Gruppenbild nicht öffentlich verfügbar";}};
+          previewImage.onerror=()=>{if(version===previewVersion){previewImage.style.display="none";previewStatus.textContent="Diagnóstico M2 · Gruppenbild nicht öffentlich verfügbar";}};
           previewImage.src=imageUrl;
-          previewStatus.textContent="Gruppenbild wird geladen…";
+          previewStatus.textContent="Diagnóstico M2 · Gruppenbild wird geladen…";
         }else{
           previewImage.removeAttribute("src");
           previewStatus.textContent="Gruppenbild nicht öffentlich verfügbar";
@@ -1366,25 +1401,40 @@ function setupProfilePublishing(){
       }catch(error){
         if(version!==previewVersion)return;
         previewImage.style.display="none";
-        previewName.textContent="Keine Vorschau verfügbar";
-        previewStatus.textContent="Automatische Erkennung fehlgeschlagen. Bitte Gruppennamen eingeben.";
-        showManualName(true);
+        previewName.textContent="Keine Vorschau verfügbar (M2)";
+        const msg=String(error?.message||'Unbekannter Fehler');
+        const kind=error?.name==='AbortError'?'TIEMPO DE ESPERA':/Failed to fetch|NetworkError|Load failed/i.test(msg)?'RED / CORS':/HTTP [45]\d\d/.test(msg)?'SERVIDOR':'METADATOS';
+        previewStatus.textContent=`Diagnóstico M2 · ${kind}: ${msg.slice(0,180)}`;
+        console.warn('GroupTreff Metadatenfehler:',error);
       }
     };
     inviteInput.addEventListener("input",()=>{clearTimeout(previewTimer);previewVersion++;previewTimer=setTimeout(updatePreview,550);});
     inviteInput.addEventListener("change",()=>{clearTimeout(previewTimer);updatePreview();});
+    // En móviles, pegar desde WhatsApp/Telegram no siempre dispara "input" de inmediato.
+    const scheduleMobilePreview=(delay=180)=>{
+      clearTimeout(previewTimer);
+      previewTimer=setTimeout(updatePreview,delay);
+    };
+    inviteInput.addEventListener("paste",()=>scheduleMobilePreview(350));
+    inviteInput.addEventListener("blur",()=>scheduleMobilePreview(100));
+    inviteInput.addEventListener("keyup",()=>scheduleMobilePreview(450));
+    document.addEventListener("visibilitychange",()=>{
+      if(!document.hidden&&form.closest('.modal.active')&&validGroupInvite(inviteInput.value.trim()))scheduleMobilePreview(220);
+    });
+    window.addEventListener("pageshow",()=>{
+      if(form.closest('.modal.active')&&validGroupInvite(inviteInput.value.trim()))scheduleMobilePreview(220);
+    });
+    // Cuando se abre el formulario con un enlace ya pegado, cargar los metadatos.
+    const addModal=document.getElementById('addModal');
+    if(addModal){
+      new MutationObserver(()=>{
+        if(addModal.classList.contains('active')&&validGroupInvite(inviteInput.value.trim()))scheduleMobilePreview(120);
+      }).observe(addModal,{attributes:true,attributeFilter:['class']});
+    }
     form.addEventListener("reset",()=>{previewVersion++;clearTimeout(previewTimer);clearPreview();});
   }
-  // Si el proveedor bloquea los metadatos, pedir el nombre real en vez de bloquear la publicación.
-  const manualNameField=document.createElement("div");
-  manualNameField.className="form-group";
-  manualNameField.id="manualGroupNameField";
-  manualNameField.hidden=true;
-  manualNameField.innerHTML='<label for="manualGroupName">Gruppenname * (wenn automatische Erkennung nicht möglich ist)</label><input id="manualGroupName" name="manual_group_name" maxlength="80" placeholder="Name deiner Gruppe" autocomplete="off"><p class="small">WhatsApp/Telegram erlaubt derzeit keine automatische Vorschau. Du kannst trotzdem veröffentlichen.</p>';
-  inviteInput.closest(".form-group").insertAdjacentElement("afterend",manualNameField);
-  const manualNameInput=manualNameField.querySelector("input");
-  const showManualName=show=>{manualNameField.hidden=!show;manualNameInput.required=show;};
-  inviteInput.addEventListener("input",()=>showManualName(false));
+  // Der Gruppenname wird ausschließlich automatisch aus dem Einladungslink gelesen.
+  // Keine manuelle Namenseingabe und keine erfundenen Ersatznamen.
   const addModalSubtitle=$("#addModal .modal-sub");
   if(addModalSubtitle)addModalSubtitle.textContent="Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht. Du kannst auch anonym veröffentlichen – ein Konto ist nicht erforderlich.";
   ["name","platform"].forEach(field=>form.querySelector(`[name="${field}"]`)?.closest(".form-group")?.remove());
@@ -1402,30 +1452,24 @@ function setupProfilePublishing(){
     if(e.target.id!=="addForm"||!db)return;
     e.preventDefault();e.stopImmediatePropagation();
     const fd=new FormData(e.target),notice=$("#addNotice"),button=e.target.querySelector(".submit"),old=button.textContent;
-    const inviteUrl=String(fd.get("invite_url")||"").trim();
+    const inviteUrl=normalizeGroupInvite(fd.get("invite_url"));
     notice.textContent="";notice.className="notice";
     button.disabled=true;button.textContent="Gruppendaten werden geladen…";
     try{
-      let meta;
-      try{meta=await groupPublishMetadata(inviteUrl);}catch(metadataError){
-        if(!validGroupInvite(inviteUrl))throw metadataError;
-        const manualName=String(fd.get("manual_group_name")||"").trim();
-        if(!manualName){showManualName(true);throw new Error("Bitte gib den Gruppennamen ein, da die automatische Erkennung nicht verfügbar ist.");}
-        meta={name:manualName,platform:groupPlatform(inviteUrl),image_url:"",description:""};
-      }
+      const meta=await groupPublishMetadata(inviteUrl);
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
       button.textContent="Gruppe wird gespeichert…";
       let imageUrl=cleanImageUrl(meta.image_url);
       if(imageUrl) imageUrl=await persistRemoteGroupImage(imageUrl);
       const groupId=crypto.randomUUID();
-      const row={id:groupId,name:(meta.name||"Gruppe").slice(0,80),platform:meta.platform||"WhatsApp",country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:imageUrl,description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
+      const row={id:groupId,name:meta.name.slice(0,80),platform:meta.platform||"WhatsApp",country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:imageUrl,description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
       /* Las filas pendientes no se pueden leer públicamente. Por eso no usamos
          .select() después de insertar: esa lectura activaba la política RLS. */
       const {error}=await db.from("groups").insert(row);
       if(error)throw error;
       rememberSubmittedGroup({id:groupId,invite_url:inviteUrl,name:row.name,country:row.country});
-      e.target.reset();showManualName(false);showVotePromotion({id:groupId,name:row.name});
+      e.target.reset();showVotePromotion({id:groupId,name:row.name});
     }catch(error){notice.textContent=`Fehler: ${error.message||"Bitte prüfe den Gruppenlink."}`;notice.className="notice show err"}
     finally{button.disabled=false;button.textContent=old}
   },true);
@@ -1479,7 +1523,7 @@ function setupProfilePublishing(){
   profileMenu.addEventListener("click",async e=>{const action=e.target.closest("[data-profile-menu]")?.dataset.profileMenu;if(!action)return;profileMenu.classList.remove("active");if(action==="logout"){await db?.auth.signOut();currentUser=null;updateAuthUI();return}if(profileMode){if(action==="edit")avatarInput?.click();else document.querySelector(".gt-profile-groups-title")?.scrollIntoView({behavior:"smooth",block:"start"});return}window.open(`${GROUPTREFF_URL}?profile=1${action==="edit"?"&edit=1":""}`,"_blank")});
   document.addEventListener("click",e=>{if(!e.target.closest("#openMyGroups")&&!e.target.closest("#profileNavMenu"))profileMenu.classList.remove("active")});
   if(profileMode)window.addEventListener("load",()=>{document.body.classList.add("profile-page");document.title="Mein Profil | GroupTreff";renderAvatar();openModal("myGroupsModal");buildGroupTreffProfile(null,{socials:getSocialLinks(currentUser)});loadMyGroups()});
-  if(publicProfileId)window.addEventListener("load",async()=>{document.body.classList.add("profile-page");document.title="Öffentliches Profil | GroupTreff";openModal("myGroupsModal");$("#profileAvatarInput")?.closest(".profile-avatar-wrap")?.querySelector(".profile-avatar-edit")?.remove();$("#refreshMyGroups").style.display="none";$("#myGroupsModal .my-groups-head .modal-sub").textContent="Öffentlich veröffentlichte Gruppen";const box=$("#myGroupsList");box.innerHTML='<div class="my-group-empty">Profil wird geladen…</div>';try{const profileUrl=`${SUPABASE_URL}/rest/v1/groups?select=id,name,description,category,country,image_url,invite_url,owner_name,owner_avatar,status&user_id=eq.${encodeURIComponent(publicProfileId)}&status=eq.approved&order=created_at.desc`;const response=await fetch(profileUrl,{headers:{apikey:SUPABASE_ANON_KEY}}),groups=await response.json();if(!response.ok)throw new Error("Profil konnte nicht geladen werden.");const rows=Array.isArray(groups)?groups:[],owner=rows[0];$("#myGroupsModal h2").textContent=owner?.owner_name||"Öffentliches Profil";if(emailBox)emailBox.textContent="";if(avatarBox)avatarBox.innerHTML=owner?.owner_avatar?`<img src="${esc(owner.owner_avatar)}" alt="Profilfoto">`:`👤`;if(!rows.length){box.innerHTML='<div class="my-group-empty">Diese Person hat noch keine veröffentlichten Gruppen.</div>';return}box.innerHTML=rows.map(g=>`<article class="my-group-item">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")}</div><p class="small" style="margin-top:6px">${esc(g.description||"WhatsApp-Gruppe entdecken.")}</p></div><div class="my-group-actions"><button class="mini-green-btn public-group-card-btn" type="button" data-public-group="${esc(g.id)}">Gruppe ansehen</button></div></article>`).join("")}catch(error){box.innerHTML='<div class="my-group-empty">Dieses Profil konnte nicht geladen werden.</div>'}});
+  if(publicProfileId)window.addEventListener("load",async()=>{document.body.classList.add("profile-page");document.title="Öffentliches Profil | GroupTreff";openModal("myGroupsModal");$("#profileAvatarInput")?.closest(".profile-avatar-wrap")?.querySelector(".profile-avatar-edit")?.remove();$("#refreshMyGroups").style.display="none";$("#myGroupsModal .my-groups-head .modal-sub").textContent="Öffentlich veröffentlichte Gruppen";const box=$("#myGroupsList");box.innerHTML='<div class="my-group-empty">Profil wird geladen…</div>';try{const profileUrl=`${SUPABASE_URL}/rest/v1/groups?select=id,name,description,category,platform,country,image_url,invite_url,owner_name,owner_avatar,status,tags,created_at,votes_count,link_status&user_id=eq.${encodeURIComponent(publicProfileId)}&status=eq.approved&order=created_at.desc`;const response=await fetch(profileUrl,{headers:{apikey:SUPABASE_ANON_KEY}}),groups=await response.json();if(!response.ok)throw new Error("Profil konnte nicht geladen werden.");const rows=Array.isArray(groups)?groups:[],owner=rows[0];$("#myGroupsModal h2").textContent=owner?.owner_name||"Öffentliches Profil";if(emailBox)emailBox.textContent="";if(avatarBox)avatarBox.innerHTML=owner?.owner_avatar?`<img src="${esc(owner.owner_avatar)}" alt="Profilfoto">`:`👤`;if(!rows.length){box.innerHTML='<div class="my-group-empty">Diese Person hat noch keine veröffentlichten Gruppen.</div>';return}box.innerHTML=rows.map(g=>`<article class="my-group-item" data-group-json="${esc(JSON.stringify(g))}">${g.image_url?`<img class="my-group-thumb" src="${esc(g.image_url)}" alt="">`:`<div class="my-group-thumb">💬</div>`}<div><h3>${esc(g.name||"Gruppe")}</h3><div class="my-group-meta">${countryInfo(g.country).flag} ${esc(g.category||"Community")}</div><p class="small" style="margin-top:6px">${esc(g.description||"WhatsApp-Gruppe entdecken.")}</p></div><div class="my-group-actions"><button class="mini-green-btn public-group-card-btn" type="button" data-public-group="${esc(g.id)}">Gruppe ansehen</button></div></article>`).join("")}catch(error){box.innerHTML='<div class="my-group-empty">Dieses Profil konnte nicht geladen werden.</div>'}});
   if(publicProfileId)window.addEventListener("load",()=>{const list=$("#myGroupsList");if(!list)return;const decorate=()=>{if(!list.querySelector(".my-group-item"))return;const img=$("#profileAvatar img")?.src||"";buildGroupTreffProfile({owner_name:$("#myGroupsModal h2")?.textContent||"GroupTreff Mitglied",owner_avatar:img},{publicView:true});observer.disconnect()};const observer=new MutationObserver(decorate);observer.observe(list,{childList:true,subtree:true});decorate()});
   if(publicProfileId)window.addEventListener("load",()=>{const list=$("#myGroupsList");if(!list)return;const addJoinButtons=()=>{list.querySelectorAll(".my-group-item").forEach(item=>{const view=item.querySelector(".public-group-card-btn"),actions=item.querySelector(".my-group-actions");if(!view||!actions||actions.querySelector(".public-join-group"))return;const groupId=view.dataset.publicGroup;const group=state.groups.find(entry=>String(entry.id)===String(groupId));if(!group?.invite_url)return;const join=document.createElement("a");join.className="public-join-group";join.href=group.invite_url;join.target="_blank";join.rel="noopener noreferrer";join.textContent="Gruppe beitreten";actions.appendChild(join);view.textContent="Karte ansehen"})};const observer=new MutationObserver(addJoinButtons);observer.observe(list,{childList:true,subtree:true});addJoinButtons()});
   if(publicProfileId){
@@ -1724,7 +1768,7 @@ loadGroups();
           const names=await caches.keys();
           await Promise.all(names.map(name=>caches.delete(name)));
         }
-        await navigator.serviceWorker.register("./sw.js?v=8",{scope:"./",updateViaCache:"none"});
+        await navigator.serviceWorker.register("./sw.js?v=12",{scope:"./",updateViaCache:"none"});
       } catch (err) {
         console.warn("Service Worker:",err);
       }
@@ -1772,10 +1816,24 @@ loadGroups();
   const profileGroups=new Map();
   const getProfileGroup=id=>profileGroups.get(String(id))||state.groups.find(group=>String(group.id)===String(id));
   const profileCard=(g,owner=false)=>{
-    const tags=Array.isArray(g.tags)?g.tags:[],category=normalizeCategory(g.category||"Community"),adult=category==="Adult";
+    const tags=Array.isArray(g.tags)?g.tags:[],category=normalizeCategory(g.category||"Community");
     const votes=+g.votes_count||0;
-    let date="";try{date=g.created_at?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(g.created_at)):""}catch{}
-    return `<article class="group-card profile-group-card" data-profile-card="${esc(g.id)}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button><span class="online-dot" aria-hidden="true"></span></div><div class="group-content"><div class="group-title">${esc(g.name||"Gruppe")}</div><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(tag=>`<span class="small">#${esc(String(tag).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div></div></article>`;
+    const platform=String(g.platform||"WhatsApp").toLowerCase();
+    const isTelegram=platform.includes("telegram");
+    const expired=g.link_status==="expired";
+    const description=g.description||"";
+    return `<article class="group-card profile-group-card ${expired?"group-expired":""} ${isTelegram?"telegram-card":""}" data-profile-card="${esc(g.id)}">
+      <div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name||"Gruppe")} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name||"Gruppe")}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div>
+      <span class="gt-card-country-flag" title="${esc(countryInfo(g.country).name)}">${countryFlagSvg(g.country||"DE",true)}</span>
+      <span class="platform-card-icon ${isTelegram?"telegram":""}" title="${isTelegram?"Telegram":"WhatsApp"}">${isTelegram?"✈":"☎"}</span>
+      <button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>
+      ${expired?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div>
+      <div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name||"Gruppe")}">${esc(g.name||"Gruppe")}</a>
+      <div class="group-category"><span>${esc(category)}</span></div>
+      <p class="card-description">${esc(description)}</p>
+      <div class="group-tags">${tags.slice(0,4).map(tag=>`<span class="small">#${esc(String(tag).replace(/^#/,""))}</span>`).join("")}</div>
+      <div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div>
+      ${owner?`<button type="button" class="profile-update-link" data-profile-update="${esc(g.id)}">🔗 Link aktualisieren</button>`:""}</div></article>`;
   };
   const convertProfileCards=()=>{
     if(!document.body.classList.contains("profile-page"))return;
@@ -1784,7 +1842,7 @@ loadGroups();
     const publicView=new URLSearchParams(location.search).has("user");
     const groups=oldCards.map(item=>{
       const id=(item.querySelector("[data-public-group]")?.dataset.publicGroup||item.querySelector("[data-own-edit]")?.dataset.ownEdit||"");
-      return getProfileGroup(id);
+      try{return JSON.parse(item.dataset.groupJson||"null")||getProfileGroup(id)}catch{return getProfileGroup(id)};
     });
     if(groups.some(group=>!group))return;
     groups.forEach(group=>profileGroups.set(String(group.id),group));
@@ -1810,8 +1868,9 @@ loadGroups();
     const next=prompt("Neuen WhatsApp- oder Telegram-Link einfügen:",group?.invite_url||"");
     if(!next?.trim())return;
     try{
-      const meta=await groupPublishMetadata(next.trim());
-      const {error}=await db.from("groups").update({invite_url:next.trim(),name:meta.name.slice(0,80),image_url:(meta.image_url?await persistRemoteGroupImage(meta.image_url):"")||cleanImageUrl(group?.image_url),description:meta.description||"",platform:meta.platform,status:"pending"}).eq("id",update.dataset.profileUpdate).eq("user_id",currentUser.id);
+      const normalized=normalizeGroupInvite(next.trim());
+      const meta=await groupPublishMetadata(normalized);
+      const {error}=await db.from("groups").update({invite_url:normalized,name:meta.name.slice(0,80),image_url:(meta.image_url?await persistRemoteGroupImage(meta.image_url):"")||cleanImageUrl(group?.image_url),description:meta.description||group?.description||"",platform:meta.platform,status:"pending"}).eq("id",update.dataset.profileUpdate).eq("user_id",currentUser.id);
       if(error)throw error;
       showNotice("myGroupsNotice","✅ Link aktualisiert. Die Gruppe wird erneut geprüft.","ok");
       await loadMyGroups();await loadGroups();
@@ -2176,14 +2235,27 @@ header,body.dark header{background:linear-gradient(115deg,#063f35 0%,#08634c 58%
 .profile-group-card.gt-adult-image .group-image img,
 .my-group-item.gt-adult-image .my-group-thumb,
 body.gt-adult-detail:not(.gt-age-confirmed) .detail-cover img {
-  filter:blur(19px) brightness(.83) !important;
-  transform:scale(1.10);
+  filter:blur(5px) brightness(.96) !important;
+  transform:scale(1.035);
   transition:filter .25s ease,transform .25s ease;
 }
 /* Mantener las fotos de adultos borrosas en las tarjetas aun después de confirmar. */
 .group-card.gt-adult-image .group-image>div[role="button"],
 .group-card.gt-adult-image .group-image>a {overflow:hidden}
 body.gt-age-confirmed.gt-adult-detail .detail-cover img {filter:none;transform:none}
+
+/* Bandera visible en la tarjeta, sin interferir con la foto ni los votos. */
+#groupsGrid .group-card .gt-card-country-flag,
+.profile-group-card .gt-card-country-flag{
+ position:absolute;right:12px;bottom:8px;z-index:5;
+ display:grid;place-items:center;width:30px;height:30px;
+ border:2px solid white;border-radius:50%;overflow:hidden;
+ background:white;box-shadow:0 2px 7px rgba(0,0,0,.23);pointer-events:none;
+}
+#groupsGrid .group-card .gt-card-country-flag .real-flag,
+.profile-group-card .gt-card-country-flag .real-flag{width:100%;height:100%;border:0;box-shadow:none;border-radius:50%;}
+#groupsGrid .group-card .gt-card-country-flag svg,
+.profile-group-card .gt-card-country-flag svg{width:100%;height:100%;}
 </style>
 <script id="gt-adult-image-blur-script">
 (()=>{
