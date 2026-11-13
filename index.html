@@ -1294,10 +1294,25 @@ async function persistRemoteGroupImage(imageUrl){
 }
 
 const groupMetadataCache=new Map();
-function validGroupInvite(url){return /^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(url)}
+function normalizeGroupInvite(raw){
+  let value=String(raw||"").trim().replace(/[\u200B-\u200D\uFEFF]/g,"");
+  // Los enlaces compartidos desde aplicaciones móviles pueden traer texto adicional,
+  // barras iniciales o carecer del protocolo.
+  const found=value.match(/(?:https?:\/\/)?\/?(?:www\.)?(?:chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\/[^\s<>"']+/i);
+  if(!found)return value;
+  value=found[0].replace(/^\/+/,"");
+  if(!/^https?:\/\//i.test(value))value="https://"+value;
+  try{
+    const url=new URL(value);
+    if(!["chat.whatsapp.com","whatsapp.com","t.me","www.t.me"].includes(url.hostname.toLowerCase()))return value;
+    if(url.hostname.toLowerCase()==="whatsapp.com"&&!url.pathname.startsWith("/channel/"))return value;
+    return url.href;
+  }catch{return value}
+}
+function validGroupInvite(url){return /^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|(?:www\.)?t\.me)\//i.test(normalizeGroupInvite(url))}
 function groupPlatform(url){return /t\.me\//i.test(url)?"Telegram":"WhatsApp"}
 async function groupPublishMetadata(inviteUrl,{retry=true}={}){
-  const cleanUrl=String(inviteUrl||"").trim();
+  const cleanUrl=normalizeGroupInvite(inviteUrl);
   if(!validGroupInvite(cleanUrl))throw new Error("Bitte füge einen gültigen WhatsApp- oder Telegram-Einladungslink ein.");
   if(groupMetadataCache.has(cleanUrl))return groupMetadataCache.get(cleanUrl);
   let lastError;
@@ -1339,9 +1354,9 @@ function setupProfilePublishing(){
     const previewStatus=preview.querySelector(".group-link-preview-status");
     const clearPreview=()=>{preview.hidden=true;previewImage.removeAttribute("src");previewName.textContent="";previewStatus.textContent="";};
     const updatePreview=async()=>{
-      const link=inviteInput.value.trim();
+      const link=normalizeGroupInvite(inviteInput.value);
       const version=++previewVersion;
-      if(!/^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(link)){
+      if(!validGroupInvite(link)){
         clearPreview();return;
       }
       preview.hidden=false;
@@ -1350,7 +1365,7 @@ function setupProfilePublishing(){
       previewImage.style.display="none";
       try{
         const metadata=await groupPublishMetadata(link);
-        if(version!==previewVersion||inviteInput.value.trim()!==link)return;
+        if(version!==previewVersion||normalizeGroupInvite(inviteInput.value)!==link)return;
         previewName.textContent=metadata.name||"Gruppe";
 
         const imageUrl=cleanImageUrl(metadata.image_url);
@@ -1372,6 +1387,11 @@ function setupProfilePublishing(){
     };
     inviteInput.addEventListener("input",()=>{clearTimeout(previewTimer);previewVersion++;previewTimer=setTimeout(updatePreview,550);});
     inviteInput.addEventListener("change",()=>{clearTimeout(previewTimer);updatePreview();});
+    // Normalizar el enlace al terminar de pegarlo, sin depender del navegador móvil.
+    inviteInput.addEventListener("blur",()=>{
+      const normalized=normalizeGroupInvite(inviteInput.value);
+      if(validGroupInvite(normalized)&&inviteInput.value!==normalized)inviteInput.value=normalized;
+    });
     // En móviles, pegar desde WhatsApp/Telegram no siempre dispara "input" de inmediato.
     const scheduleMobilePreview=(delay=180)=>{
       clearTimeout(previewTimer);
@@ -1414,7 +1434,7 @@ function setupProfilePublishing(){
     if(e.target.id!=="addForm"||!db)return;
     e.preventDefault();e.stopImmediatePropagation();
     const fd=new FormData(e.target),notice=$("#addNotice"),button=e.target.querySelector(".submit"),old=button.textContent;
-    const inviteUrl=String(fd.get("invite_url")||"").trim();
+    const inviteUrl=normalizeGroupInvite(fd.get("invite_url"));
     notice.textContent="";notice.className="notice";
     button.disabled=true;button.textContent="Gruppendaten werden geladen…";
     try{
