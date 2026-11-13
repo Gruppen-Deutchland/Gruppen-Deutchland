@@ -845,6 +845,15 @@ header .nav.mobile-menu-open .nav-right .add-btn{
 @media(max-width:760px){.profile-page #myGroupsList.profile-cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.profile-page .profile-group-card{height:320px}}
 @media(max-width:420px){.profile-page .profile-group-card{height:302px}.profile-page .profile-group-card .profile-update-link{font-size:9px;padding:4px}}
 </style>
+<style id="gt-profile-link-fix-20261113">
+.profile-page .profile-group-card{height:350px!important;overflow:hidden!important}
+.profile-page .profile-group-card .group-content{height:auto!important;flex:1!important;padding-bottom:36px!important;position:relative!important}
+.profile-page .profile-group-card .profile-update-link{position:absolute!important;left:9px!important;right:9px!important;bottom:5px!important;width:calc(100% - 18px)!important;max-width:none!important;height:26px!important;display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;font-size:11px!important;line-height:1!important;background:#eafbf0!important;color:#137d3e!important;border:1px solid #17a34a!important;border-radius:8px!important;box-shadow:none!important}
+.profile-page .profile-group-card:has(.profile-update-link) .group-card-footer{padding-right:0!important}
+.profile-page .profile-group-card .platform-card-icon svg{width:23px!important;height:23px!important;display:block!important}
+@media(max-width:760px){.profile-page .profile-group-card{height:340px!important}}
+@media(max-width:420px){.profile-page .profile-group-card{height:330px!important}.profile-page .profile-group-card .profile-update-link{font-size:10px!important}}
+</style>
 </head>
 <body>
 <header><div class="nav"><a class="logo" href="https://grouptreff.de/" aria-label="GroupTreff Startseite" style="text-decoration:none;color:inherit">GroupTreff</a><form class="nav-search" id="navSearch"><input id="navSearchInput" type="search" placeholder="Gruppen suchen..."><button type="submit" aria-label="Gruppen suchen">🔎</button></form><div class="nav-right" aria-label="Hauptaktionen"><button class="nav-btn add-btn" id="openAdd" type="button" aria-label="Neue Gruppe hinzufügen">＋ Gruppe hinzufügen</button><button class="nav-btn" id="openAuth" type="button" aria-label="Anmelden oder registrieren">👤 Anmelden</button><button class="nav-btn" id="openMyGroups" type="button" aria-label="Benutzerprofil öffnen" style="display:none">👤</button></div></div></header>
@@ -1159,7 +1168,7 @@ render=function(){
     let date="";try{date=g.created_at?new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(g.created_at)):""}catch{}
     const platform=String(g.platform||"WhatsApp");
     const platformIcon=platform.toLowerCase()==="telegram"?`<svg viewBox="0 0 48 48" aria-label="Telegram"><circle cx="24" cy="24" r="24" fill="#229ED9"/><path fill="#fff" d="M35.8 13.4 31.9 34c-.3 1.5-1.1 1.9-2.3 1.2l-6-4.4-2.9 2.8c-.3.3-.6.6-1.2.6l.4-6.1 11.1-10c.5-.4-.1-.7-.7-.3L16.6 26.4l-5.9-1.8c-1.3-.4-1.3-1.3.3-1.9l23.1-8.9c1.1-.4 2 .3 1.7 1.6z"/></svg>`:`<svg viewBox="0 0 48 48" aria-label="WhatsApp"><circle cx="24" cy="24" r="24" fill="#25D366"/><path fill="#fff" d="M35 12.9A15.4 15.4 0 0 0 10.8 31.5L8.6 39.6l8.3-2.2A15.4 15.4 0 0 0 35 12.9zm-11 22.9c-2.4 0-4.8-.7-6.8-1.9l-.5-.3-4.9 1.3 1.3-4.8-.3-.5a11.8 11.8 0 1 1 11.2 6.2z"/></svg>`;
-    return `<article class="group-card ${g.link_status==="expired"?"group-expired":""}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><span class="gt-card-country-flag" title="${esc(countryInfo(g.country).name)}">${countryFlagSvg(g.country||"DE",true)}</span>${owner?`<div class="owner-badge" title="${esc(owner)}"><span class="owner-dot">●</span><span>${esc(owner)}</span></div>`:""}<button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>${g.link_status==="expired"?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div><div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name)} – Gruppenseite öffnen">${esc(g.name)}</a><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(t=>`<span class="small">#${esc(String(t).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div>${owner?`<button type="button" class="profile-update-link" data-profile-update="${esc(g.id)}">🔗 Link aktualisieren</button>`:""}</div></article>`;
+    return `<article class="group-card ${g.link_status==="expired"?"group-expired":""}"><div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name)} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name)}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div><span class="gt-card-country-flag" title="${esc(countryInfo(g.country).name)}">${countryFlagSvg(g.country||"DE",true)}</span>${owner?`<div class="owner-badge" title="${esc(owner)}"><span class="owner-dot">●</span><span>${esc(owner)}</span></div>`:""}<button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>${g.link_status==="expired"?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div><div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name)} – Gruppenseite öffnen">${esc(g.name)}</a><div class="group-category"><span>${esc(category)}</span></div><div class="group-tags">${tags.slice(0,4).map(t=>`<span class="small">#${esc(String(t).replace(/^#/,""))}</span>`).join("")}</div><div class="group-card-footer"><span class="gt-footer-views" title="Aufrufe">◉ 0</span><span class="gt-footer-vote-slot"></span><span class="age-badge">${esc(categoryIcon(category))} ${esc(category)}</span></div>${owner?`<button type="button" class="profile-update-link" data-profile-update="${esc(g.id)}">Link aktualisieren</button>`:""}</div></article>`;
   }).join(""):`<div class="empty"><h3>😕 Keine Gruppen gefunden</h3><p>Versuche einen anderen Suchbegriff oder Filter.</p></div>`;
   document.querySelectorAll(".group-image img").forEach(img=>img.addEventListener("error",()=>{img.onerror=null;img.removeAttribute("src");img.style.display="none";if(img.nextElementSibling)img.nextElementSibling.style.display="grid"},{once:true}));
   $("#pagination").innerHTML=pages>1?Array.from({length:pages},(_,i)=>`<button class="page-btn ${i+1===state.page?"active":""}" data-page="${i+1}">${i+1}</button>`).join(""):"";
@@ -1335,23 +1344,33 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
   const cleanUrl=normalizeGroupInvite(inviteUrl);
   if(!validGroupInvite(cleanUrl))throw new Error("Bitte füge einen gültigen WhatsApp- oder Telegram-Einladungslink ein.");
   if(groupMetadataCache.has(cleanUrl))return groupMetadataCache.get(cleanUrl);
-  let lastError;
-  for(let attempt=0;attempt<(retry?2:1);attempt++){
-    try{
+  // Consultar el dominio público y, si no entrega datos, el Worker directamente.
+  // No inventar nombres ni permitir publicar metadatos vacíos.
+  const endpoints=[`${GROUPTREFF_URL}g/metadata`,"https://grouptreff-share.gruppen-deutschland.workers.dev/g/metadata"];
+  let problems=[];
+  for(const endpoint of endpoints){
+    for(let attempt=0;attempt<(retry?2:1);attempt++){
       const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),25000);
-      let response;
-      try{response=await fetch(`${GROUPTREFF_URL}g/metadata`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({invite_url:cleanUrl}),signal:controller.signal,cache:"no-store"});}
-      finally{clearTimeout(timeout)}
-      const data=await response.json().catch(()=>({}));
-      if(!response.ok)throw new Error(`HTTP ${response.status}: ${String(data?.error||data?.message||response.statusText||"Error del servidor").slice(0,120)}`);
-      if(!String(data?.name||"").trim())throw new Error("Der Gruppenname konnte nicht automatisch gelesen werden. Bitte prüfe den Link oder versuche es später erneut.");
-      const result={...data,name:String(data.name).trim(),platform:data.platform||groupPlatform(cleanUrl),image_url:String(data.image_url||"").trim()};
-      groupMetadataCache.set(cleanUrl,result);
-      return result;
-    }catch(error){lastError=error;if(attempt===0&&retry)await new Promise(resolve=>setTimeout(resolve,700));}
+      const timeout=setTimeout(()=>controller.abort(),15000);
+      try{
+        const response=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({invite_url:cleanUrl}),signal:controller.signal,cache:"no-store",mode:"cors"});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(`HTTP ${response.status}: ${String(data.error||data.message||response.statusText).slice(0,120)}`);
+        const name=String(data.name||"").trim();
+        if(!name){
+          const reason=String(data.diagnostic||data.warning||"NO_METADATA");
+          throw new Error(`METADATOS: ${reason}`);
+        }
+        const result={...data,name,platform:data.platform||groupPlatform(cleanUrl),image_url:String(data.image_url||"").trim()};
+        groupMetadataCache.set(cleanUrl,result);
+        return result;
+      }catch(error){
+        problems.push(`${endpoint.includes('workers.dev')?'Worker':'Web'}: ${error?.name==='AbortError'?'TIMEOUT':String(error?.message||error)}`);
+      }finally{clearTimeout(timeout)}
+      if(attempt===0&&retry)await new Promise(resolve=>setTimeout(resolve,600));
+    }
   }
-  throw lastError||new Error("Gruppendaten nicht verfügbar");
+  throw new Error(`WhatsApp/Telegram hat keine Gruppendaten geliefert. ${problems.slice(-2).join(' | ').slice(0,220)}`);
 }
 function setupProfilePublishing(){
   const form=$("#addForm");
@@ -1815,6 +1834,8 @@ loadGroups();
 (()=>{
   const profileGroups=new Map();
   const getProfileGroup=id=>profileGroups.get(String(id))||state.groups.find(group=>String(group.id)===String(id));
+  const profileWhatsAppIcon='<svg viewBox="0 0 48 48" aria-label="WhatsApp"><circle cx="24" cy="24" r="24" fill="#25D366"/><path fill="#fff" d="M35 12.9A15.4 15.4 0 0 0 10.8 31.5L8.6 39.6l8.3-2.2A15.4 15.4 0 0 0 35 12.9zm-11 22.9c-2.4 0-4.8-.7-6.8-1.9l-.5-.3-4.9 1.3 1.3-4.8-.3-.5a11.8 11.8 0 1 1 11.2 6.2z"/></svg>';
+  const profileTelegramIcon='<svg viewBox="0 0 48 48" aria-label="Telegram"><circle cx="24" cy="24" r="24" fill="#229ED9"/><path fill="#fff" d="M35.8 13.4 31.9 34c-.3 1.5-1.1 1.9-2.3 1.2l-6-4.4-2.9 2.8c-.3.3-.6.6-1.2.6l.4-6.1 11.1-10c.5-.4-.1-.7-.7-.3L16.6 26.4l-5.9-1.8c-1.3-.4-1.3-1.3.3-1.9l23.1-8.9c1.1-.4 2 .3 1.7 1.6z"/></svg>';
   const profileCard=(g,owner=false)=>{
     const tags=Array.isArray(g.tags)?g.tags:[],category=normalizeCategory(g.category||"Community");
     const votes=+g.votes_count||0;
@@ -1825,7 +1846,7 @@ loadGroups();
     return `<article class="group-card profile-group-card ${expired?"group-expired":""} ${isTelegram?"telegram-card":""}" data-profile-card="${esc(g.id)}">
       <div class="group-image"><div role="button" tabindex="0" aria-label="${esc(g.name||"Gruppe")} ansehen">${g.image_url?`<img src="${esc(g.image_url)}" alt="${esc(g.name||"Gruppe")}" loading="lazy"><span class="image-fallback" style="display:none">💬</span>`:`<span class="image-fallback">💬</span>`}</div>
       <span class="gt-card-country-flag" title="${esc(countryInfo(g.country).name)}">${countryFlagSvg(g.country||"DE",true)}</span>
-      <span class="platform-card-icon ${isTelegram?"telegram":""}" title="${isTelegram?"Telegram":"WhatsApp"}">${isTelegram?"✈":"☎"}</span>
+      <span class="platform-card-icon ${isTelegram?"telegram":""}" title="${isTelegram?"Telegram":"WhatsApp"}">${isTelegram?profileTelegramIcon:profileWhatsAppIcon}</span>
       <button class="top-vote" type="button" data-vote="${esc(g.id)}" title="Für diese Gruppe abstimmen">+${votes}</button>
       ${expired?`<span class="expired-label">Link abgelaufen</span>`:`<span class="online-dot" aria-hidden="true"></span>`}</div>
       <div class="group-content"><a class="group-title seo-group-link" href="${esc(groupPageUrl(g))}" title="${esc(g.name||"Gruppe")}">${esc(g.name||"Gruppe")}</a>
