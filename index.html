@@ -1346,7 +1346,7 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
   if(groupMetadataCache.has(cleanUrl))return groupMetadataCache.get(cleanUrl);
   // Consultar el dominio público y, si no entrega datos, el Worker directamente.
   // No inventar nombres ni permitir publicar metadatos vacíos.
-  const endpoints=[`${GROUPTREFF_URL}g/metadata`,"https://grouptreff-share.gruppen-deutschland.workers.dev/g/metadata"];
+  const endpoints=[`${GROUPTREFF_URL}g/metadata`];
   let problems=[];
   for(const endpoint of endpoints){
     for(let attempt=0;attempt<(retry?2:1);attempt++){
@@ -1370,7 +1370,7 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
       if(attempt===0&&retry)await new Promise(resolve=>setTimeout(resolve,600));
     }
   }
-  throw new Error(`WhatsApp/Telegram hat keine Gruppendaten geliefert. ${problems.slice(-2).join(' | ').slice(0,220)}`);
+  throw new Error(`Der echte Gruppenname konnte nicht geladen werden. WhatsApp/Telegram blockiert möglicherweise den Abruf. ${problems.slice(-1).join(' | ').slice(0,140)}`);
 }
 function setupProfilePublishing(){
   const form=$("#addForm");
@@ -1404,9 +1404,11 @@ function setupProfilePublishing(){
     try{
       if(!validGroupInvite(inviteUrl))throw new Error("Bitte gib einen gültigen WhatsApp- oder Telegram-Link ein.");
       const platform=groupPlatform(inviteUrl);
-      let meta={name:platform==="Telegram"?"Telegram Gruppe":"WhatsApp Gruppe",platform,image_url:"",description:""};
-      try{const fetched=await groupPublishMetadata(inviteUrl,{retry:false});meta={...meta,...fetched};}
-      catch(metadataError){console.info("GroupTreff: Metadaten nicht verfügbar; Link wird dennoch zur Prüfung gespeichert.",metadataError?.message||metadataError);}
+      // Solo guardar el nombre real. No inventar un nombre cuando el proveedor bloquee metadatos.
+      const meta=await groupPublishMetadata(inviteUrl,{retry:false});
+      if(!meta.name||/^(WhatsApp Gruppe|Telegram Gruppe)$/i.test(meta.name.trim())){
+        throw new Error("Der echte Gruppenname ist derzeit nicht verfügbar. Bitte versuche es später erneut.");
+      }
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
       button.textContent="Gruppe wird gespeichert…";
