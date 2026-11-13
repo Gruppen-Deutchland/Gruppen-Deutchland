@@ -1294,22 +1294,13 @@ async function persistRemoteGroupImage(imageUrl){
 }
 
 const groupMetadataCache=new Map();
-function normalizeGroupInvite(raw){
-  let value=String(raw||"").trim().replace(/[\u200B-\u200D\uFEFF]/g,"");
-  // Los enlaces compartidos desde aplicaciones móviles pueden traer texto adicional,
-  // barras iniciales o carecer del protocolo.
-  const found=value.match(/(?:https?:\/\/)?\/?(?:www\.)?(?:chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\/[^\s<>"']+/i);
-  if(!found)return value;
-  value=found[0].replace(/^\/+/,"");
-  if(!/^https?:\/\//i.test(value))value="https://"+value;
-  try{
-    const url=new URL(value);
-    if(!["chat.whatsapp.com","whatsapp.com","t.me","www.t.me"].includes(url.hostname.toLowerCase()))return value;
-    if(url.hostname.toLowerCase()==="whatsapp.com"&&!url.pathname.startsWith("/channel/"))return value;
-    return url.href;
-  }catch{return value}
+function normalizeGroupInvite(value){
+  const text=String(value||'').trim();
+  const found=text.match(/(?:https?:\/\/)?\/?(?:www\.)?(?:chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\/[^\s<>"']+/i);
+  if(!found)return text;
+  return 'https://'+found[0].replace(/^\/+/, '').replace(/^https?:\/\//i,'').replace(/^www\./i,'');
 }
-function validGroupInvite(url){return /^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|(?:www\.)?t\.me)\//i.test(normalizeGroupInvite(url))}
+function validGroupInvite(url){return /^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(normalizeGroupInvite(url))}
 function groupPlatform(url){return /t\.me\//i.test(url)?"Telegram":"WhatsApp"}
 async function groupPublishMetadata(inviteUrl,{retry=true}={}){
   const cleanUrl=normalizeGroupInvite(inviteUrl);
@@ -1319,7 +1310,7 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
   for(let attempt=0;attempt<(retry?2:1);attempt++){
     try{
       const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),12000);
+      const timeout=setTimeout(()=>controller.abort(),25000);
       let response;
       try{response=await fetch(`${GROUPTREFF_URL}g/metadata`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({invite_url:cleanUrl}),signal:controller.signal,cache:"no-store"});}
       finally{clearTimeout(timeout)}
@@ -1356,7 +1347,7 @@ function setupProfilePublishing(){
     const updatePreview=async()=>{
       const link=normalizeGroupInvite(inviteInput.value);
       const version=++previewVersion;
-      if(!validGroupInvite(link)){
+      if(!/^https:\/\/(chat\.whatsapp\.com|whatsapp\.com\/channel|t\.me)\//i.test(link)){
         clearPreview();return;
       }
       preview.hidden=false;
@@ -1382,22 +1373,18 @@ function setupProfilePublishing(){
         if(version!==previewVersion)return;
         previewImage.style.display="none";
         previewName.textContent="Keine Vorschau verfügbar";
-        previewStatus.textContent="Automatische Erkennung nicht verfügbar. Bitte Link prüfen oder später erneut versuchen.";
+        previewStatus.textContent=error?.name==='AbortError' ? 'Zeitüberschreitung beim Laden. Bitte erneut versuchen.' : `Fehler: ${String(error?.message||'Unbekannter Fehler').slice(0,160)}`;
+        console.warn('GroupTreff Metadatenfehler:',error);
       }
     };
     inviteInput.addEventListener("input",()=>{clearTimeout(previewTimer);previewVersion++;previewTimer=setTimeout(updatePreview,550);});
     inviteInput.addEventListener("change",()=>{clearTimeout(previewTimer);updatePreview();});
-    // Normalizar el enlace al terminar de pegarlo, sin depender del navegador móvil.
-    inviteInput.addEventListener("blur",()=>{
-      const normalized=normalizeGroupInvite(inviteInput.value);
-      if(validGroupInvite(normalized)&&inviteInput.value!==normalized)inviteInput.value=normalized;
-    });
     // En móviles, pegar desde WhatsApp/Telegram no siempre dispara "input" de inmediato.
     const scheduleMobilePreview=(delay=180)=>{
       clearTimeout(previewTimer);
       previewTimer=setTimeout(updatePreview,delay);
     };
-    inviteInput.addEventListener("paste",()=>scheduleMobilePreview(180));
+    inviteInput.addEventListener("paste",()=>scheduleMobilePreview(350));
     inviteInput.addEventListener("blur",()=>scheduleMobilePreview(100));
     inviteInput.addEventListener("keyup",()=>scheduleMobilePreview(450));
     document.addEventListener("visibilitychange",()=>{
