@@ -1315,7 +1315,7 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
       try{response=await fetch(`${GROUPTREFF_URL}g/metadata`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({invite_url:cleanUrl}),signal:controller.signal,cache:"no-store"});}
       finally{clearTimeout(timeout)}
       const data=await response.json().catch(()=>({}));
-      if(!response.ok)throw new Error(data?.error||"Die Gruppendaten konnten nicht geladen werden.");
+      if(!response.ok)throw new Error(`HTTP ${response.status}: ${String(data?.error||data?.message||response.statusText||"Error del servidor").slice(0,120)}`);
       if(!String(data?.name||"").trim())throw new Error("Der Gruppenname konnte nicht automatisch gelesen werden. Bitte prüfe den Link oder versuche es später erneut.");
       const result={...data,name:String(data.name).trim(),platform:data.platform||groupPlatform(cleanUrl),image_url:String(data.image_url||"").trim()};
       groupMetadataCache.set(cleanUrl,result);
@@ -1352,7 +1352,7 @@ function setupProfilePublishing(){
       }
       preview.hidden=false;
       previewName.textContent="Gruppenvorschau";
-      previewStatus.textContent="Gruppendaten werden geladen…";
+      previewStatus.textContent="Diagnóstico M2 · Consultando servidor…";
       previewImage.style.display="none";
       try{
         const metadata=await groupPublishMetadata(link);
@@ -1362,9 +1362,9 @@ function setupProfilePublishing(){
         const imageUrl=cleanImageUrl(metadata.image_url);
         if(imageUrl){
           previewImage.onload=()=>{if(version===previewVersion){previewImage.style.display="block";previewStatus.textContent=metadata.platform||"Gruppenbild geladen";}};
-          previewImage.onerror=()=>{if(version===previewVersion){previewImage.style.display="none";previewStatus.textContent="Gruppenbild nicht öffentlich verfügbar";}};
+          previewImage.onerror=()=>{if(version===previewVersion){previewImage.style.display="none";previewStatus.textContent="Diagnóstico M2 · Gruppenbild nicht öffentlich verfügbar";}};
           previewImage.src=imageUrl;
-          previewStatus.textContent="Gruppenbild wird geladen…";
+          previewStatus.textContent="Diagnóstico M2 · Gruppenbild wird geladen…";
         }else{
           previewImage.removeAttribute("src");
           previewStatus.textContent="Gruppenbild nicht öffentlich verfügbar";
@@ -1372,8 +1372,10 @@ function setupProfilePublishing(){
       }catch(error){
         if(version!==previewVersion)return;
         previewImage.style.display="none";
-        previewName.textContent="Keine Vorschau verfügbar";
-        previewStatus.textContent=error?.name==='AbortError' ? 'Zeitüberschreitung beim Laden. Bitte erneut versuchen.' : `Fehler: ${String(error?.message||'Unbekannter Fehler').slice(0,160)}`;
+        previewName.textContent="Keine Vorschau verfügbar (M2)";
+        const msg=String(error?.message||'Unbekannter Fehler');
+        const kind=error?.name==='AbortError'?'TIEMPO DE ESPERA':/Failed to fetch|NetworkError|Load failed/i.test(msg)?'RED / CORS':/HTTP [45]\d\d/.test(msg)?'SERVIDOR':'METADATOS';
+        previewStatus.textContent=`Diagnóstico M2 · ${kind}: ${msg.slice(0,180)}`;
         console.warn('GroupTreff Metadatenfehler:',error);
       }
     };
@@ -1737,7 +1739,7 @@ loadGroups();
           const names=await caches.keys();
           await Promise.all(names.map(name=>caches.delete(name)));
         }
-        await navigator.serviceWorker.register("./sw.js?v=8",{scope:"./",updateViaCache:"none"});
+        await navigator.serviceWorker.register("./sw.js?v=12",{scope:"./",updateViaCache:"none"});
       } catch (err) {
         console.warn("Service Worker:",err);
       }
