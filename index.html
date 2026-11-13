@@ -1400,9 +1400,13 @@ function setupProfilePublishing(){
     const fd=new FormData(e.target),notice=$("#addNotice"),button=e.target.querySelector(".submit"),old=button.textContent;
     const inviteUrl=normalizeGroupInvite(fd.get("invite_url"));
     notice.textContent="";notice.className="notice";
-    button.disabled=true;button.textContent="Gruppendaten werden geladen…";
+    button.disabled=true;button.textContent="Gruppe wird gespeichert…";
     try{
-      const meta=await groupPublishMetadata(inviteUrl);
+      if(!validGroupInvite(inviteUrl))throw new Error("Bitte gib einen gültigen WhatsApp- oder Telegram-Link ein.");
+      const platform=groupPlatform(inviteUrl);
+      let meta={name:platform==="Telegram"?"Telegram Gruppe":"WhatsApp Gruppe",platform,image_url:"",description:""};
+      try{const fetched=await groupPublishMetadata(inviteUrl,{retry:false});meta={...meta,...fetched};}
+      catch(metadataError){console.info("GroupTreff: Metadaten nicht verfügbar; Link wird dennoch zur Prüfung gespeichert.",metadataError?.message||metadataError);}
       const description=String(fd.get("description")||"").trim()||meta.description||"";
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
       button.textContent="Gruppe wird gespeichert…";
@@ -1424,12 +1428,14 @@ function setupProfilePublishing(){
     e.preventDefault();e.stopImmediatePropagation();
     const id=edit.dataset.ownEdit,{data:oldGroup}=await db.from("groups").select("invite_url,image_url").eq("id",id).eq("user_id",currentUser.id).single();
     const inviteUrl=prompt("Neuen WhatsApp- oder Telegram-Link einfügen:",oldGroup?.invite_url||"");if(!inviteUrl?.trim())return;
-    try{const meta=await groupPublishMetadata(inviteUrl.trim());
+    try{if(!validGroupInvite(inviteUrl.trim()))throw new Error("Ungültiger Gruppenlink.");
+      let meta={name:null,platform:groupPlatform(inviteUrl.trim()),image_url:"",description:""};
+      try{meta={...meta,...await groupPublishMetadata(inviteUrl.trim(),{retry:false})}}catch(err){console.info("Metadaten nicht verfügbar; Link wird aktualisiert.",err?.message||err)}
       /* Nunca borrar la imagen existente solo porque WhatsApp no la devuelve. */
       let imageUrl=cleanImageUrl(meta.image_url);
       if(imageUrl)imageUrl=await persistRemoteGroupImage(imageUrl);
       if(!imageUrl)imageUrl=cleanImageUrl(oldGroup?.image_url);
-      const {error}=await db.from("groups").update({invite_url:inviteUrl.trim(),name:meta.name.slice(0,80),image_url:imageUrl,description:meta.description||"",platform:meta.platform,status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)throw error;showNotice("myGroupsNotice","✅ Link und Gruppendaten wurden aktualisiert. Die Gruppe wird erneut geprüft.","ok");await loadMyGroups();await loadGroups()}catch(error){showNotice("myGroupsNotice",error.message||"Der Link konnte nicht aktualisiert werden.")}
+      const {error}=await db.from("groups").update({invite_url:inviteUrl.trim(),...(meta.name?{name:meta.name.slice(0,80)}:{}),image_url:imageUrl,platform:meta.platform,status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)throw error;showNotice("myGroupsNotice","✅ Link und Gruppendaten wurden aktualisiert. Die Gruppe wird erneut geprüft.","ok");await loadMyGroups();await loadGroups()}catch(error){showNotice("myGroupsNotice",error.message||"Der Link konnte nicht aktualisiert werden.")}
   },true);
   const avatarBox=$("#profileAvatar"),avatarInput=$("#profileAvatarInput"),emailBox=$("#profileEmail");
   const renderAvatar=()=>{const avatar=currentUser?.user_metadata?.avatar_data||"";if(avatarBox)avatarBox.innerHTML=avatar?`<img src="${esc(avatar)}" alt="Profilfoto">`:`👤`;document.querySelectorAll(".gt-profile-avatar").forEach(box=>box.innerHTML=avatar?`<img src="${esc(avatar)}" alt="Profilfoto">`:`👤`);if(emailBox)emailBox.textContent=""};
