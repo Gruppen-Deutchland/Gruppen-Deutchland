@@ -1331,6 +1331,10 @@ async function persistRemoteGroupImage(imageUrl){
   }
 }
 
+function isGenericGroupName(value){
+  const name=String(value||"").normalize("NFKC").trim().replace(/\s+/g," ").replace(/[.!。]+$/g,"");
+  return !name || /^(?:WhatsApp(?:[- ]Gruppeneinladung| Group Invite| Gruppe| Group| Einladung| Invitation)|Telegram(?: Group| Gruppe| Invitation| Einladung)|Join (?:this |the )?(?:WhatsApp|Telegram) (?:group|Gruppe))$/i.test(name);
+}
 const groupMetadataCache=new Map();
 function normalizeGroupInvite(value){
   const text=String(value||'').trim();
@@ -1357,7 +1361,7 @@ async function groupPublishMetadata(inviteUrl,{retry=true}={}){
         const data=await response.json().catch(()=>({}));
         if(!response.ok)throw new Error(`HTTP ${response.status}: ${String(data.error||data.message||response.statusText).slice(0,120)}`);
         const name=String(data.name||"").trim();
-        if(!name){
+        if(isGenericGroupName(name)){
           const reason=String(data.diagnostic||data.warning||"NO_METADATA");
           throw new Error(`METADATOS: ${reason}`);
         }
@@ -1406,7 +1410,7 @@ function setupProfilePublishing(){
       const platform=groupPlatform(inviteUrl);
       // Solo guardar el nombre real. No inventar un nombre cuando el proveedor bloquee metadatos.
       const meta=await groupPublishMetadata(inviteUrl,{retry:false});
-      if(!meta.name||/^(WhatsApp Gruppe|Telegram Gruppe)$/i.test(meta.name.trim())){
+      if(isGenericGroupName(meta.name)){
         throw new Error("Der echte Gruppenname ist derzeit nicht verfügbar. Bitte versuche es später erneut.");
       }
       const description=String(fd.get("description")||"").trim()||meta.description||"";
@@ -1437,7 +1441,7 @@ function setupProfilePublishing(){
       let imageUrl=cleanImageUrl(meta.image_url);
       if(imageUrl)imageUrl=await persistRemoteGroupImage(imageUrl);
       if(!imageUrl)imageUrl=cleanImageUrl(oldGroup?.image_url);
-      const {error}=await db.from("groups").update({invite_url:inviteUrl.trim(),...(meta.name?{name:meta.name.slice(0,80)}:{}),image_url:imageUrl,platform:meta.platform,status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)throw error;showNotice("myGroupsNotice","✅ Link und Gruppendaten wurden aktualisiert. Die Gruppe wird erneut geprüft.","ok");await loadMyGroups();await loadGroups()}catch(error){showNotice("myGroupsNotice",error.message||"Der Link konnte nicht aktualisiert werden.")}
+      const {error}=await db.from("groups").update({invite_url:inviteUrl.trim(),...(!isGenericGroupName(meta.name)?{name:meta.name.slice(0,80)}:{}),image_url:imageUrl,platform:meta.platform,status:"pending"}).eq("id",id).eq("user_id",currentUser.id);if(error)throw error;showNotice("myGroupsNotice","✅ Link und Gruppendaten wurden aktualisiert. Die Gruppe wird erneut geprüft.","ok");await loadMyGroups();await loadGroups()}catch(error){showNotice("myGroupsNotice",error.message||"Der Link konnte nicht aktualisiert werden.")}
   },true);
   const avatarBox=$("#profileAvatar"),avatarInput=$("#profileAvatarInput"),emailBox=$("#profileEmail");
   const renderAvatar=()=>{const avatar=currentUser?.user_metadata?.avatar_data||"";if(avatarBox)avatarBox.innerHTML=avatar?`<img src="${esc(avatar)}" alt="Profilfoto">`:`👤`;document.querySelectorAll(".gt-profile-avatar").forEach(box=>box.innerHTML=avatar?`<img src="${esc(avatar)}" alt="Profilfoto">`:`👤`);if(emailBox)emailBox.textContent=""};
