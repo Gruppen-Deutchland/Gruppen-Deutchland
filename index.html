@@ -1383,11 +1383,17 @@ function setupProfilePublishing(){
   if(inviteLabel)inviteLabel.textContent="WhatsApp- oder Telegram-Link *";
   if(inviteInput)inviteInput.placeholder="https://chat.whatsapp.com/... oder https://t.me/...";
   // Vista previa automática desactivada. Los demás campos y el envío permanecen intactos.
-  // Der Gruppenname wird ausschließlich automatisch aus dem Einladungslink gelesen.
-  // Keine manuelle Namenseingabe und keine erfundenen Ersatznamen.
+  // Automatische Metadaten sind optional: bei blockiertem Abruf darf manuell veröffentlicht werden.
+  const nameInput=form.querySelector('[name="name"]');
+  if(nameInput){
+    const nameLabel=nameInput.closest(".form-group")?.querySelector("label");
+    if(nameLabel)nameLabel.textContent="Gruppenname * (manuell eingeben, falls kein automatischer Abruf möglich ist)";
+    nameInput.placeholder="Name deiner WhatsApp- oder Telegram-Gruppe";
+    nameInput.required=true;
+  }
   const addModalSubtitle=$("#addModal .modal-sub");
   if(addModalSubtitle)addModalSubtitle.textContent="Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht. Du kannst auch anonym veröffentlichen – ein Konto ist nicht erforderlich.";
-  ["name","platform"].forEach(field=>form.querySelector(`[name="${field}"]`)?.closest(".form-group")?.remove());
+  form.querySelector('[name="platform"]')?.closest(".form-group")?.remove();
   form.querySelector('[name="description"]')?.closest(".form-group")?.querySelector("label")?.replaceChildren("Beschreibung (optional)");
   const tagsInput=form.querySelector('[name="tags"]');
   if(tagsInput){tagsInput.closest(".form-group")?.querySelector("label")?.replaceChildren("Hashtags (optional)");tagsInput.placeholder="#chat, #deutschland, #freunde";}
@@ -1408,24 +1414,35 @@ function setupProfilePublishing(){
     try{
       if(!validGroupInvite(inviteUrl))throw new Error("Bitte gib einen gültigen WhatsApp- oder Telegram-Link ein.");
       const platform=groupPlatform(inviteUrl);
-      // Solo guardar el nombre real. No inventar un nombre cuando el proveedor bloquee metadatos.
-      const meta=await groupPublishMetadata(inviteUrl,{retry:false});
-      if(isGenericGroupName(meta.name)){
-        throw new Error("Der echte Gruppenname ist derzeit nicht verfügbar. Bitte versuche es später erneut.");
+      // Primero intentamos recuperar los metadatos. Si el proveedor bloquea el acceso,
+      // usamos el nombre escrito por el usuario y permitimos continuar.
+      let meta={name:"",platform,image_url:""};
+      try{
+        meta={...meta,...await groupPublishMetadata(inviteUrl,{retry:false})};
+      }catch(metadataError){
+        console.info("GroupTreff: Metadaten nicht verfügbar; manuelle Angaben werden verwendet.",metadataError?.message||metadataError);
       }
+      const manualName=String(fd.get("name")||"").trim();
+      const finalName=!isGenericGroupName(meta.name)?String(meta.name).trim():manualName;
+      if(!finalName)throw new Error("Bitte gib den Gruppennamen manuell ein.");
       const description=String(fd.get("description")||"").trim();
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
       button.textContent="Gruppe wird gespeichert…";
       let imageUrl=cleanImageUrl(meta.image_url);
-      if(imageUrl) imageUrl=await persistRemoteGroupImage(imageUrl);
+      if(imageUrl){
+        try{imageUrl=await persistRemoteGroupImage(imageUrl)}
+        catch(imageError){console.info("Gruppenbild konnte nicht automatisch übernommen werden.",imageError?.message||imageError);imageUrl=""}
+      }
       const groupId=crypto.randomUUID();
-      const row={id:groupId,name:meta.name.slice(0,80),platform:meta.platform||"WhatsApp",country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:imageUrl,description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
+      const row={id:groupId,name:finalName.slice(0,80),platform:meta.platform||platform,country:normalizeCountry(fd.get("country")),category:normalizeCategory(fd.get("category")),age_restriction:String(fd.get("age_restriction")),invite_url:inviteUrl,image_url:imageUrl,description,tags,status:"pending",user_id:currentUser?.id||null,owner_name:currentUser?displayName(currentUser):"Gast",owner_avatar:currentUser?.user_metadata?.avatar_data||""};
       /* Las filas pendientes no se pueden leer públicamente. Por eso no usamos
          .select() después de insertar: esa lectura activaba la política RLS. */
       const {error}=await db.from("groups").insert(row);
       if(error)throw error;
       rememberSubmittedGroup({id:groupId,invite_url:inviteUrl,name:row.name,country:row.country});
-      e.target.reset();showVotePromotion({id:groupId,name:row.name});
+      e.target.reset();
+      showVotePromotion({id:groupId,name:row.name});
+      if(isGenericGroupName(meta.name))console.info("Gruppe wurde mit manuell eingegebenem Namen eingereicht.");
     }catch(error){notice.textContent=`Fehler: ${error.message||"Bitte prüfe den Gruppenlink."}`;notice.className="notice show err"}
     finally{button.disabled=false;button.textContent=old}
   },true);
