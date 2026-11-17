@@ -1384,12 +1384,24 @@ function setupProfilePublishing(){
   if(inviteInput)inviteInput.placeholder="https://chat.whatsapp.com/... oder https://t.me/...";
   // Vista previa automática desactivada. Los demás campos y el envío permanecen intactos.
   // Automatische Metadaten sind optional: bei blockiertem Abruf darf manuell veröffentlicht werden.
-  const nameInput=form.querySelector('[name="name"]');
+  let nameInput=form.querySelector('[name="name"]');
+  // Campo visible y obligatorio para que el usuario escriba el nombre del grupo.
+  if(!nameInput){
+    const nameField=document.createElement("div");
+    nameField.className="form-group";
+    nameField.innerHTML='<label for="publishGroupName">Gruppenname *</label><input id="publishGroupName" name="name" type="text" maxlength="80" required autocomplete="off" placeholder="Name deiner WhatsApp- oder Telegram-Gruppe">';
+    form.insertBefore(nameField,form.firstElementChild);
+    nameInput=nameField.querySelector('[name="name"]');
+  }
   if(nameInput){
     const nameLabel=nameInput.closest(".form-group")?.querySelector("label");
-    if(nameLabel)nameLabel.textContent="Gruppenname * (manuell eingeben, falls kein automatischer Abruf möglich ist)";
+    if(nameLabel)nameLabel.textContent="Gruppenname * (Pflichtfeld)";
+    nameInput.type="text";
+    nameInput.maxLength=80;
     nameInput.placeholder="Name deiner WhatsApp- oder Telegram-Gruppe";
     nameInput.required=true;
+    nameInput.setAttribute("required","");
+    nameInput.setAttribute("autocomplete","off");
   }
   const addModalSubtitle=$("#addModal .modal-sub");
   if(addModalSubtitle)addModalSubtitle.textContent="Neue Gruppen werden zur Prüfung gespeichert und nach Freigabe veröffentlicht. Du kannst auch anonym veröffentlichen – ein Konto ist nicht erforderlich.";
@@ -1409,9 +1421,18 @@ function setupProfilePublishing(){
     e.preventDefault();e.stopImmediatePropagation();
     const fd=new FormData(e.target),notice=$("#addNotice"),button=e.target.querySelector(".submit"),old=button.textContent;
     const inviteUrl=normalizeGroupInvite(fd.get("invite_url"));
+    const manualName=String(fd.get("name")||"").trim();
     notice.textContent="";notice.className="notice";
     button.disabled=true;button.textContent="Gruppe wird gespeichert…";
     try{
+      if(!manualName){
+        const nameField=e.target.querySelector('[name="name"]');
+        nameField?.setCustomValidity("Bitte gib den Gruppennamen ein.");
+        nameField?.reportValidity();
+        nameField?.focus();
+        throw new Error("Bitte gib zuerst den Gruppennamen ein.");
+      }
+      e.target.querySelector('[name="name"]')?.setCustomValidity("");
       if(!validGroupInvite(inviteUrl))throw new Error("Bitte gib einen gültigen WhatsApp- oder Telegram-Link ein.");
       const platform=groupPlatform(inviteUrl);
       // Primero intentamos recuperar los metadatos. Si el proveedor bloquea el acceso,
@@ -1422,8 +1443,9 @@ function setupProfilePublishing(){
       }catch(metadataError){
         console.info("GroupTreff: Metadaten nicht verfügbar; manuelle Angaben werden verwendet.",metadataError?.message||metadataError);
       }
-      const manualName=String(fd.get("name")||"").trim();
-      const finalName=!isGenericGroupName(meta.name)?String(meta.name).trim():manualName;
+      // El nombre escrito por el usuario es el que se guarda; no se sustituye
+      // silenciosamente por el nombre recuperado desde WhatsApp o Telegram.
+      const finalName=manualName;
       if(!finalName)throw new Error("Bitte gib den Gruppennamen manuell ein.");
       const description=String(fd.get("description")||"").trim();
       const tags=String(fd.get("tags")||"").split(",").map(tag=>tag.trim().replace(/^#/,"" )).filter(Boolean).slice(0,10);
